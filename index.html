@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>PARTES DE TRABAJO</title>
+    <link rel="stylesheet" href="./css/tareas.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+</head>
+<body>
+        </div>
+    <div class="container">
+        <h1>PARTES DE TRABAJO</h1>
+        
+        <!-- Formulario de entrada -->
+        <div class="form-container">
+            <form id="tareaForm">
+                <div class="form-group sala-group">
+                    <label for="titulo">SALA:</label>
+                    <select id="titulo" required>
+                        <option value="">Seleccione una sala</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="descripcion">Trabajo realizado:</label>
+                    <textarea id="descripcion" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" required>
+                </div>
+
+                <div class="time-container">
+                    <div class="form-group time-group">
+                        <label for="horaInicio">Hora de Inicio:</label>
+                        <input type="time" id="horaInicio" required>
+                    </div>
+                    
+                    <div class="form-group time-group">
+                        <label for="horaFin">Hora de Finalización:</label>
+                        <input type="time" id="horaFin" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="prioridad">Prioridad:</label>
+                    <select id="prioridad" required>
+                        <option value="baja">Baja</option>
+                        <option value="media">Media</option>
+                        <option value="alta">Alta</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="fotos">Fotos:</label>
+                    <div class="fotos-container">
+                        <input type="file" id="fotos" accept="image/*" multiple class="fotos-input">
+                        <div id="preview-fotos" class="preview-fotos"></div>
+                    </div>
+                </div>
+                
+                <div class="buttons-container">
+                    <button type="submit" class="btn-primary">Guardar Tarea</button>
+                    <button type="button" id="toggleHistorial" class="btn-secondary">Mostrar Historial</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Contenedor del historial -->
+        <div id="historialContainer" class="historial-container hidden">
+            <h2>Historial de Tareas</h2>
+            <div id="historialTareas" class="historial-tareas">
+                <!-- Las tareas se insertarán aquí dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Botón para generar PDF -->
+        <button id="mostrarPDFBtn" class="btn-pdf">
+            <i class="fas fa-file-pdf"></i>
+            Generar Informe PDF
+        </button>
+
+        <!-- Contenedor para seleccionar fechas -->
+        <div id="fechaFiltroContainer" class="fecha-filtro-container">
+            <div class="filtro-header">
+                <h3>Seleccione el período</h3>
+                <button id="cerrarFiltroBtn" class="btn-cerrar" title="Cerrar">×</button>
+            </div>
+            
+            <div class="filtro-sala">
+                <label for="salaFiltro">Seleccione una sala (opcional):</label>
+                <select id="salaFiltro">
+                    <option value="">Todas las salas</option>
+                </select>
+            </div>
+            
+            <div class="filtro-fecha">
+                <label for="fechaInicio">Fecha inicial:</label>
+                <input type="date" id="fechaInicio" required>
+                
+                <label for="fechaFin">Fecha final:</label>
+                <input type="date" id="fechaFin" required>
+            </div>
+            
+            <button id="generarPDFBtn" class="btn-primary">Generar PDF</button>
+        </div>
+    </div>
+
+    <!-- Modal para ver fotos en grande -->
+    <div id="modal-foto" class="modal-foto">
+        <button class="btn-cerrar">×</button>
+        <img id="modal-imagen" src="" alt="Foto en grande">
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="js/tareas.js"></script>
+</body>
+</html> 
+
