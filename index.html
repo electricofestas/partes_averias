@@ -19,14 +19,14 @@
                         <form id="tareaForm">
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Sala</label>
+                                    <label class="form-label"><strong>Sala</strong></label>
                                     <input type="text" class="form-control" id="titulo" list="salasList" required>
                                     <datalist id="salasList">
                                         <!-- Las opciones se llenarán dinámicamente -->
                                     </datalist>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Prioridad</label>
+                                    <label class="form-label"><strong>Prioridad</strong></label>
                                     <select class="form-select" id="prioridad" required>
                                         <option value="baja">Baja</option>
                                         <option value="media">Media</option>
@@ -37,26 +37,26 @@
 
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Fecha</label>
+                                    <label class="form-label"><strong>Fecha</strong></label>
                                     <input type="date" class="form-control" id="fecha" required>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label">Hora Inicio</label>
+                                    <label class="form-label"><strong>Hora Inicio</strong></label>
                                     <input type="time" class="form-control" id="horaInicio" required>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label">Hora Fin</label>
+                                    <label class="form-label"><strong>Hora Fin</strong></label>
                                     <input type="time" class="form-control" id="horaFin" required>
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Descripción de la Tarea</label>
+                                <label class="form-label"><strong>Descripción de la Tarea</strong></label>
                                 <textarea class="form-control" id="descripcion" rows="3" required></textarea>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Adjuntar Fotos</label>
+                                <label class="form-label"><strong>Adjuntar Fotos</strong></label>
                                 <input type="file" class="form-control" id="fotos" multiple accept="image/*">
                                 <div id="fotosPreview" class="mt-2 d-flex flex-wrap gap-2"></div>
                             </div>
