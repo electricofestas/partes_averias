@@ -163,21 +163,36 @@ function actualizarSelectorSalasPDF() {
 
 // Función para mostrar/ocultar el historial
 function toggleHistorial() {
-    const historialContainer = document.getElementById('historialContainer');
-    const toggleHistorialBtn = document.getElementById('toggleHistorial');
+    if (!historialContainer || !toggleHistorialBtn) {
+        console.error('No se encontraron los elementos necesarios');
+        return;
+    }
     
     if (historialContainer.classList.contains('hidden')) {
         historialContainer.classList.remove('hidden');
         toggleHistorialBtn.textContent = 'Ocultar Historial';
-        mostrarTareas(); // Actualizamos el historial al mostrarlo
+        mostrarTareas(); // Actualizamos el historial
     } else {
         historialContainer.classList.add('hidden');
         toggleHistorialBtn.textContent = 'Mostrar Historial';
     }
 }
 
-// Evento para mostrar/ocultar historial (reemplazar el evento existente)
-toggleHistorialBtn.addEventListener('click', toggleHistorial);
+// Asegurarnos de que el evento se agregue cuando el DOM esté cargado
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleHistorialBtn = document.getElementById('toggleHistorial');
+    const historialContainer = document.getElementById('historialContainer');
+    
+    // Agregar el evento al botón de historial
+    if (toggleHistorialBtn) {
+        toggleHistorialBtn.addEventListener('click', toggleHistorial);
+    }
+    
+    // Asegurarnos de que el historial esté oculto inicialmente
+    if (historialContainer) {
+        historialContainer.classList.add('hidden');
+    }
+});
 
 // Función para eliminar registro
 async function eliminarRegistro(id, event) {
