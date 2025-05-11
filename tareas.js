@@ -13,11 +13,37 @@ function mostrarMensaje(mensaje) {
 
 // Función para validar fecha
 function validarFecha(fecha) {
-    if (!fecha) return false;
-    const fechaSeleccionada = new Date(fecha);
-    const fechaActual = new Date();
-    fechaActual.setHours(0, 0, 0, 0);
-    return fechaSeleccionada >= fechaActual && !isNaN(fechaSeleccionada.getTime());
+    try {
+        if (!fecha) {
+            mostrarMensaje('Por favor, seleccione una fecha');
+            return false;
+        }
+        
+        const fechaSeleccionada = new Date(fecha);
+        const fechaActual = new Date();
+        
+        // Establecer las horas a 0 para comparar solo las fechas
+        fechaSeleccionada.setHours(0, 0, 0, 0);
+        fechaActual.setHours(0, 0, 0, 0);
+        
+        // Verificar si la fecha es válida
+        if (isNaN(fechaSeleccionada.getTime())) {
+            mostrarMensaje('La fecha ingresada no es válida');
+            return false;
+        }
+        
+        // Permitir fechas desde hoy en adelante
+        if (fechaSeleccionada < fechaActual) {
+            mostrarMensaje('La fecha debe ser igual o posterior a hoy');
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error al validar fecha:', error);
+        mostrarMensaje('Error al validar la fecha');
+        return false;
+    }
 }
 
 // Función para procesar fotos
