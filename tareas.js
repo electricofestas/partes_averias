@@ -189,16 +189,21 @@ function actualizarSelectorSalasPDF() {
 
 // Función para mostrar/ocultar el historial
 function toggleHistorial() {
+    const historialContainer = document.getElementById('historialContainer');
+    const toggleHistorialBtn = document.getElementById('toggleHistorial');
+    
     if (!historialContainer || !toggleHistorialBtn) {
         console.error('No se encontraron los elementos necesarios');
         return;
     }
     
-    if (historialContainer.classList.contains('hidden')) {
+    if (historialContainer.style.display === 'none' || historialContainer.classList.contains('hidden')) {
+        historialContainer.style.display = 'block';
         historialContainer.classList.remove('hidden');
         toggleHistorialBtn.textContent = 'Ocultar Historial';
-        mostrarTareas();
+        mostrarTareas(); // Actualizamos el historial
     } else {
+        historialContainer.style.display = 'none';
         historialContainer.classList.add('hidden');
         toggleHistorialBtn.textContent = 'Mostrar Historial';
     }
@@ -359,4 +364,77 @@ mostrarTareas();
 } catch (error) {
     console.error('Error al guardar tarea:', error);
     mostrarMensaje('Error al guardar la tarea');
+}
+
+// Función para generar PDF
+async function generarPDF() {
+    const fechaInicio = document.getElementById('fechaInicioPDF').value;
+    const fechaFin = document.getElementById('fechaFinPDF').value;
+    const salaSeleccionada = document.getElementById('salaFiltro').value;
+    
+    if (!fechaInicio || !fechaFin) {
+        mostrarMensaje('Por favor, seleccione un rango de fechas');
+        return;
+    }
+    
+    try {
+        let tareas = obtenerTareasDelStorage();
+        
+        // Filtrar por fecha y sala
+        tareas = tareas.filter(tarea => {
+            const fechaTarea = new Date(tarea.fecha);
+            const inicio = new Date(fechaInicio);
+            const fin = new Date(fechaFin);
+            inicio.setHours(0, 0, 0, 0);
+            fin.setHours(23, 59, 59, 999);
+            
+            const cumpleFecha = fechaTarea >= inicio && fechaTarea <= fin;
+            if (salaSeleccionada) {
+                return cumpleFecha && tarea.titulo === salaSeleccionada;
+            }
+            return cumpleFecha;
+        });
+        
+        if (tareas.length === 0) {
+            mostrarMensaje('No hay tareas para el período seleccionado');
+            return;
+        }
+        
+        // Crear PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Configuración del documento
+        doc.setFontSize(16);
+        doc.text('Informe de Tareas', 20, 20);
+        
+        let yPos = 40;
+        tareas.forEach(tarea => {
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+            
+            doc.setFontSize(12);
+            doc.text(`Sala: ${tarea.titulo}`, 20, yPos);
+            doc.text(`Fecha: ${new Date(tarea.fecha).toLocaleDateString()}`, 20, yPos + 7);
+            doc.text(`Horario: ${tarea.horaInicio} - ${tarea.horaFin}`, 20, yPos + 14);
+            doc.text(`Prioridad: ${tarea.prioridad}`, 20, yPos + 21);
+            
+            // Manejar descripción larga
+            const descripcionLines = doc.splitTextToSize(tarea.descripcion, 170);
+            doc.text('Descripción:', 20, yPos + 28);
+            doc.setFontSize(10);
+            doc.text(descripcionLines, 20, yPos + 35);
+            
+            yPos += 50 + (descripcionLines.length * 5);
+        });
+        
+        // Guardar el PDF
+        doc.save(`informe_${fechaInicio}_${fechaFin}.pdf`);
+        
+    } catch (error) {
+        console.error('Error al generar PDF:', error);
+        mostrarMensaje('Error al generar el informe PDF');
+    }
 }
