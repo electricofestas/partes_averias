@@ -189,25 +189,40 @@ function actualizarSelectorSalasPDF() {
 
 // Función para mostrar/ocultar el historial
 function toggleHistorial() {
+    if (!historialContainer || !toggleHistorialBtn) {
+        console.error('No se encontraron los elementos necesarios');
+        return;
+    }
+    
     if (historialContainer.classList.contains('hidden')) {
         historialContainer.classList.remove('hidden');
         toggleHistorialBtn.textContent = 'Ocultar Historial';
-        mostrarTareas(); // Aseguramos que se muestren las tareas al abrir
+        mostrarTareas();
     } else {
         historialContainer.classList.add('hidden');
         toggleHistorialBtn.textContent = 'Mostrar Historial';
     }
 }
 
-// Evento para mostrar/ocultar historial (reemplazar el evento existente)
-toggleHistorialBtn.addEventListener('click', toggleHistorial);
-
 // Inicializar la aplicación
 document.addEventListener('DOMContentLoaded', () => {
+    // Mostrar el historial inicialmente
+    if (historialContainer) {
+        historialContainer.classList.remove('hidden');
+        mostrarTareas();
+    }
+    
+    // Configurar el botón de historial
+    if (toggleHistorialBtn) {
+        toggleHistorialBtn.textContent = 'Ocultar Historial';
+        toggleHistorialBtn.addEventListener('click', toggleHistorial);
+    }
+    
+    // Cargar datos iniciales
     limpiarDatosAntiguos();
     cargarSalas();
-    mostrarTareas();
     
+    // Configurar el selector de salas
     const optionNueva = new Option('+ Agregar nueva sala', 'nueva_sala');
     selectSala.add(optionNueva);
 });

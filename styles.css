@@ -12,6 +12,13 @@
     z-index: 1000;
 }
 
+/* Estilos para el título principal */
+h2.text-center {
+    font-weight: bold;
+    text-decoration: underline;
+    color: #333;
+}
+
 .modal-contenido {
     position: relative;
     max-width: 90%;
@@ -41,6 +48,54 @@
 .btn-secondary:hover {
     background-color: #218838 !important;
     border-color: #1e7e34 !important;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#historialContainer {
+    transition: all 0.3s ease;
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.tarea-item {
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.tarea-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.botones-tarea {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-editar, .btn-eliminar {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.btn-editar {
+    background-color: #ffc107;
+}
+
+.btn-eliminar {
+    background-color: #dc3545;
+    color: white;
 }
 
 .btn-secondary {
