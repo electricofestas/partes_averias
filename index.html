@@ -18,10 +18,14 @@
                     <div class="card-body">
                         <form id="tareaForm">
                             <div class="row mb-3">
-                                <div class="col-md-6">
+<button id="toggleHistorial" class="btn btn-primary">Mostrar Historial</button>
+<button id="generarPDF" class="btn btn-secondary">Generar PDF</button>
+<div id="historialContainer" class="hidden">
+    <div id="historialTareas"></div>
+</div>                                <div class="col-md-6">
                                     <label class="form-label"><strong>Sala</strong></label>
                                     <input type="text" class="form-control" id="titulo" list="salasList" required>
-                                    <datalist id="salasList">
+                  <div id="mensaje" class="mensaje" style="display: none;"></div>                  <datalist id="salasList">
                                         <!-- Las opciones se llenarán dinámicamente -->
                                     </datalist>
                                 </div>

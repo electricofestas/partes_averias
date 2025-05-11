@@ -1,4 +1,20 @@
-// ... existing code ...
+function obtenerTareasDelStorage() {
+    try {
+        const indicesTareas = JSON.parse(localStorage.getItem('indicesTareas')) || [];
+        return indicesTareas
+            .map(id => {
+                try {
+                    return JSON.parse(localStorage.getItem(id));
+                } catch {
+                    return null;
+                }
+            })
+            .filter(tarea => tarea !== null);
+    } catch (error) {
+        console.error('Error al obtener tareas:', error);
+        return [];
+    }
+}
 
 // Función para mostrar/ocultar el historial
 function toggleHistorial() {
@@ -69,4 +85,33 @@ function toggleHistorial() {
     }
 }
 
-// ... existing code ...
+function eliminarRegistro(id) {
+    if (confirm('¿Está seguro de que desea eliminar esta tarea?')) {
+        try {
+            // Eliminar la tarea
+            localStorage.removeItem(id);
+            
+            // Actualizar índices
+            const indicesTareas = JSON.parse(localStorage.getItem('indicesTareas')) || [];
+            const nuevoIndice = indicesTareas.filter(tareaId => tareaId !== id);
+            localStorage.setItem('indicesTareas', JSON.stringify(nuevoIndice));
+            
+            mostrarMensaje('Tarea eliminada correctamente');
+            mostrarTareas();
+        } catch (error) {
+            console.error('Error al eliminar tarea:', error);
+            mostrarMensaje('Error al eliminar la tarea');
+        }
+    }
+}
+
+function mostrarMensaje(mensaje) {
+    const mensajeElement = document.getElementById('mensaje');
+    if (mensajeElement) {
+        mensajeElement.textContent = mensaje;
+        mensajeElement.style.display = 'block';
+        setTimeout(() => {
+            mensajeElement.style.display = 'none';
+        }, 3000);
+    }
+}
