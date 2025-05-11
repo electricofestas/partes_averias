@@ -12,13 +12,6 @@
     z-index: 1000;
 }
 
-/* Estilos para el título principal */
-h2.text-center {
-    font-weight: bold;
-    text-decoration: underline;
-    color: #333;
-}
-
 .modal-contenido {
     position: relative;
     max-width: 90%;
@@ -48,15 +41,6 @@ h2.text-center {
 .btn-secondary:hover {
     background-color: #218838 !important;
     border-color: #1e7e34 !important;
-}
-
-.hidden {
-    display: none !important;
-}
-
-#historialContainer {
-    transition: all 0.3s ease;
-    margin-top: 15px;
 }
 
 .btn-secondary {
