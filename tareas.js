@@ -398,8 +398,28 @@ tareaForm.addEventListener('submit', async function(e) {
         const prioridad = document.getElementById('prioridad').value;
         const fotos = await procesarFotos(document.getElementById('fotos'));
 
+        // Validaciones
+        if (!titulo) {
+            mostrarMensaje('Por favor, ingrese el nombre de la sala');
+            return;
+        }
+
         if (!validarFecha(fecha)) {
-            mostrarMensaje('La fecha debe ser igual o posterior a hoy');
+            return; // El mensaje se muestra en la función validarFecha
+        }
+
+        if (!horaInicio || !horaFin) {
+            mostrarMensaje('Por favor, ingrese el horario completo');
+            return;
+        }
+
+        if (horaInicio >= horaFin) {
+            mostrarMensaje('La hora de inicio debe ser anterior a la hora de fin');
+            return;
+        }
+
+        if (!descripcion) {
+            mostrarMensaje('Por favor, ingrese una descripción de la tarea');
             return;
         }
 
@@ -412,9 +432,14 @@ tareaForm.addEventListener('submit', async function(e) {
             descripcion,
             prioridad,
             fotos,
-            fechaCreacion: tareaEditandoId ? JSON.parse(localStorage.getItem(tareaEditandoId)).fechaCreacion : new Date().toISOString(),
+            fechaCreacion: tareaEditandoId ? 
+                JSON.parse(localStorage.getItem(tareaEditandoId))?.fechaCreacion || 
+                new Date().toISOString() : 
+                new Date().toISOString(),
             fechaModificacion: new Date().toISOString(),
-            version: tareaEditandoId ? (JSON.parse(localStorage.getItem(tareaEditandoId)).version || 1) + 1 : 1
+            version: tareaEditandoId ? 
+                (JSON.parse(localStorage.getItem(tareaEditandoId))?.version || 0) + 1 : 
+                1
         };
 
         // Guardar la tarea
@@ -426,9 +451,6 @@ tareaForm.addEventListener('submit', async function(e) {
             indicesTareas.push(tarea.id);
             localStorage.setItem('indicesTareas', JSON.stringify(indicesTareas));
         }
-
-        // Guardar la sala en la lista de salas
-        guardarNuevaSala(titulo);
 
         // Limpiar el formulario y restablecer el estado
         tareaForm.reset();
@@ -444,3 +466,20 @@ tareaForm.addEventListener('submit', async function(e) {
         mostrarMensaje('Error al guardar la tarea');
     }
 });
+
+// Guardar la sala en la lista de salas
+guardarNuevaSala(titulo);
+
+// Limpiar el formulario y restablecer el estado
+tareaForm.reset();
+document.getElementById('fotosPreview').innerHTML = '';
+tareaEditandoId = null;
+const submitBtn = tareaForm.querySelector('button[type="submit"]');
+submitBtn.textContent = 'Guardar Tarea';
+
+mostrarMensaje(tareaEditandoId ? 'Tarea actualizada correctamente' : 'Tarea guardada correctamente');
+mostrarTareas();
+} catch (error) {
+    console.error('Error al guardar tarea:', error);
+    mostrarMensaje('Error al guardar la tarea');
+}
