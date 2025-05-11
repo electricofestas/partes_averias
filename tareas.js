@@ -211,17 +211,29 @@ function toggleHistorial() {
 
 // Inicializar la aplicación
 document.addEventListener('DOMContentLoaded', () => {
-    // Mostrar el historial inicialmente
-    if (historialContainer) {
-        historialContainer.classList.remove('hidden');
-        mostrarTareas();
+    const historialContainer = document.getElementById('historialContainer');
+    const toggleHistorialBtn = document.getElementById('toggleHistorial');
+    
+    // Asegurarnos de que los elementos existen
+    if (!historialContainer || !toggleHistorialBtn) {
+        console.error('No se encontraron elementos necesarios para el historial');
+        return;
     }
     
     // Configurar el botón de historial
-    if (toggleHistorialBtn) {
-        toggleHistorialBtn.textContent = 'Ocultar Historial';
-        toggleHistorialBtn.addEventListener('click', toggleHistorial);
-    }
+    toggleHistorialBtn.addEventListener('click', () => {
+        if (historialContainer.classList.contains('hidden')) {
+            historialContainer.classList.remove('hidden');
+            toggleHistorialBtn.textContent = 'Ocultar Historial';
+            mostrarTareas();
+        } else {
+            historialContainer.classList.add('hidden');
+            toggleHistorialBtn.textContent = 'Mostrar Historial';
+        }
+    });
+    
+    // Mostrar el historial inicialmente
+    mostrarTareas();
     
     // Cargar datos iniciales
     limpiarDatosAntiguos();
@@ -446,3 +458,174 @@ function generarPDF() {
         mostrarMensaje('Error al generar el PDF');
     }
 }
+
+// ...
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Mostrar el historial inicialmente
+    if (historialContainer) {
+        historialContainer.classList.remove('hidden');
+        mostrarTareas();
+    }
+    
+    // Configurar el botón de historial
+    if (toggleHistorialBtn) {
+        toggleHistorialBtn.textContent = 'Ocultar Historial';
+        toggleHistorialBtn.addEventListener('click', toggleHistorial);
+    }
+    
+    // Cargar datos iniciales
+    limpiarDatosAntiguos();
+    cargarSalas();
+    
+    // Configurar el selector de salas
+    const optionNueva = new Option('+ Agregar nueva sala', 'nueva_sala');
+    selectSala.add(optionNueva);
+});
+
+// Función para editar un registro
+function editarRegistro(id) {
+    try {
+        const tareaData = localStorage.getItem(id);
+        if (!tareaData) {
+            mostrarMensaje('No se encontró la tarea');
+            return;
+        }
+
+        const tarea = JSON.parse(tareaData);
+        tareaEditandoId = id;
+
+        // Rellenar el formulario con los datos de la tarea
+        document.getElementById('titulo').value = tarea.titulo;
+        document.getElementById('fecha').value = tarea.fecha;
+        document.getElementById('horaInicio').value = tarea.horaInicio;
+        document.getElementById('horaFin').value = tarea.horaFin;
+        document.getElementById('descripcion').value = tarea.descripcion;
+        document.getElementById('prioridad').value = tarea.prioridad;
+
+        // Cambiar el texto del botón de submit
+        const submitBtn = tareaForm.querySelector('button[type="submit"]');
+        submitBtn.textContent = 'Actualizar Tarea';
+
+        // Hacer scroll hacia el formulario
+        tareaForm.scrollIntoView({ behavior: 'smooth' });
+
+        // Actualizar la vista del historial
+        mostrarTareas();
+    } catch (error) {
+        console.error('Error al editar registro:', error);
+        mostrarMensaje('Error al cargar la tarea para editar');
+    }
+}
+
+// Evento para el formulario
+tareaForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    try {
+        const titulo = document.getElementById('titulo').value.trim();
+        const fecha = document.getElementById('fecha').value;
+        const horaInicio = document.getElementById('horaInicio').value;
+        const horaFin = document.getElementById('horaFin').value;
+        const descripcion = document.getElementById('descripcion').value.trim();
+        const prioridad = document.getElementById('prioridad').value;
+        const fotos = await procesarFotos(document.getElementById('fotos'));
+
+        // Validaciones
+        if (!titulo) {
+            mostrarMensaje('Por favor, ingrese el nombre de la sala');
+            return;
+        }
+
+        if (!validarFecha(fecha)) {
+            return; // El mensaje se muestra en la función validarFecha
+        }
+
+        if (!horaInicio || !horaFin) {
+            mostrarMensaje('Por favor, ingrese el horario completo');
+            return;
+        }
+
+        if (horaInicio >= horaFin) {
+            mostrarMensaje('La hora de inicio debe ser anterior a la hora de fin');
+            return;
+        }
+
+        if (!descripcion) {
+            mostrarMensaje('Por favor, ingrese una descripción de la tarea');
+            return;
+        }
+
+        const tarea = {
+            id: tareaEditandoId || Date.now().toString(),
+            titulo,
+            fecha,
+            horaInicio,
+            horaFin,
+            descripcion,
+            prioridad,
+            fotos,
+            fechaCreacion: tareaEditandoId ? 
+                JSON.parse(localStorage.getItem(tareaEditandoId))?.fechaCreacion || 
+                new Date().toISOString() : 
+                new Date().toISOString(),
+            fechaModificacion: new Date().toISOString(),
+            version: tareaEditandoId ? 
+                (JSON.parse(localStorage.getItem(tareaEditandoId))?.version || 0) + 1 : 
+                1
+        };
+
+        // Guardar la tarea
+        localStorage.setItem(tarea.id, JSON.stringify(tarea));
+
+        // Actualizar índices
+        const indicesTareas = JSON.parse(localStorage.getItem('indicesTareas')) || [];
+        if (!indicesTareas.includes(tarea.id)) {
+            indicesTareas.push(tarea.id);
+            localStorage.setItem('indicesTareas', JSON.stringify(indicesTareas));
+        }
+
+        // Limpiar el formulario y restablecer el estado
+        tareaForm.reset();
+        document.getElementById('fotosPreview').innerHTML = '';
+        tareaEditandoId = null;
+        const submitBtn = tareaForm.querySelector('button[type="submit"]');
+        submitBtn.textContent = 'Guardar Tarea';
+
+        mostrarMensaje(tareaEditandoId ? 'Tarea actualizada correctamente' : 'Tarea guardada correctamente');
+        mostrarTareas();
+    } catch (error) {
+        console.error('Error al guardar tarea:', error);
+        mostrarMensaje('Error al guardar la tarea');
+    }
+});
+
+// Guardar la sala en la lista de salas
+guardarNuevaSala(titulo);
+
+// Limpiar el formulario y restablecer el estado
+tareaForm.reset();
+document.getElementById('fotosPreview').innerHTML = '';
+tareaEditandoId = null;
+const submitBtn = tareaForm.querySelector('button[type="submit"]');
+submitBtn.textContent = 'Guardar Tarea';
+
+mostrarMensaje(tareaEditandoId ? 'Tarea actualizada correctamente' : 'Tarea guardada correctamente');
+mostrarTareas();
+} catch (error) {
+    console.error('Error al guardar tarea:', error);
+    mostrarMensaje('Error al guardar la tarea');
+}
+
+// Configurar el botón de generar PDF
+const generarPDFBtn = document.getElementById('generarPDF');
+if (generarPDFBtn) {
+    generarPDFBtn.addEventListener('click', generarPDF);
+}
+
+// Configurar el botón de mostrar selector de fechas
+const mostrarSelectorFechasBtn = document.getElementById('mostrarSelectorFechas');
+if (mostrarSelectorFechasBtn) {
+    mostrarSelectorFechasBtn.addEventListener('click', mostrarSelectorFechas);
+}
+});
