@@ -213,31 +213,23 @@ function toggleHistorial() {
 document.addEventListener('DOMContentLoaded', () => {
     const historialContainer = document.getElementById('historialContainer');
     const toggleHistorialBtn = document.getElementById('toggleHistorial');
-    
-    // Asegurarnos de que los elementos existen
-    if (!historialContainer || !toggleHistorialBtn) {
-        console.error('No se encontraron elementos necesarios para el historial');
-        return;
-    }
+    const generarPDFBtn = document.getElementById('generarPDF');
     
     // Configurar el botón de historial
-    toggleHistorialBtn.addEventListener('click', () => {
-        if (historialContainer.classList.contains('hidden')) {
-            historialContainer.classList.remove('hidden');
-            toggleHistorialBtn.textContent = 'Ocultar Historial';
-            mostrarTareas();
-        } else {
-            historialContainer.classList.add('hidden');
-            toggleHistorialBtn.textContent = 'Mostrar Historial';
-        }
-    });
+    if (toggleHistorialBtn) {
+        toggleHistorialBtn.textContent = 'Mostrar Historial';
+        toggleHistorialBtn.addEventListener('click', toggleHistorial);
+    }
     
-    // Mostrar el historial inicialmente
-    mostrarTareas();
+    // Configurar el botón de generar PDF
+    if (generarPDFBtn) {
+        generarPDFBtn.addEventListener('click', generarPDF);
+    }
     
     // Cargar datos iniciales
     limpiarDatosAntiguos();
     cargarSalas();
+    mostrarTareas();
     
     // Configurar el selector de salas
     const optionNueva = new Option('+ Agregar nueva sala', 'nueva_sala');
