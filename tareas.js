@@ -188,7 +188,11 @@ function actualizarSelectorSalasPDF() {
 }
 
 // Función para mostrar/ocultar el historial
+// Función para mostrar/ocultar el historial
 function toggleHistorial() {
+    const historialContainer = document.getElementById('historialContainer');
+    const toggleHistorialBtn = document.getElementById('toggleHistorial');
+    
     if (!historialContainer || !toggleHistorialBtn) {
         console.error('No se encontraron los elementos necesarios');
         return;
@@ -197,148 +201,12 @@ function toggleHistorial() {
     if (historialContainer.classList.contains('hidden')) {
         historialContainer.classList.remove('hidden');
         toggleHistorialBtn.textContent = 'Ocultar Historial';
-        mostrarTareas(); // Actualizamos el historial
+        mostrarTareas(); // Actualizamos el historial al mostrarlo
     } else {
         historialContainer.classList.add('hidden');
         toggleHistorialBtn.textContent = 'Mostrar Historial';
     }
 }
-
-// Asegurarnos de que el evento se agregue cuando el DOM esté cargado
-document.addEventListener('DOMContentLoaded', function() {
-    const toggleHistorialBtn = document.getElementById('toggleHistorial');
-    const historialContainer = document.getElementById('historialContainer');
-    
-    // Agregar el evento al botón de historial
-    if (toggleHistorialBtn) {
-        toggleHistorialBtn.addEventListener('click', toggleHistorial);
-    }
-    
-    // Asegurarnos de que el historial esté oculto inicialmente
-    if (historialContainer) {
-        historialContainer.classList.add('hidden');
-    }
-});
-
-// Función para eliminar registro
-async function eliminarRegistro(id, event) {
-    event.stopPropagation();
-    if (!confirm('¿Está seguro de eliminar este registro?')) return;
-    
-    try {
-        const indicesTareas = JSON.parse(localStorage.getItem('indicesTareas')) || [];
-        const nuevoIndice = indicesTareas.filter(tareaId => tareaId !== id);
-        localStorage.setItem('indicesTareas', JSON.stringify(nuevoIndice));
-        localStorage.removeItem(id);
-        mostrarMensaje('Registro eliminado correctamente');
-        mostrarTareas();
-    } catch (error) {
-        console.error('Error al eliminar:', error);
-        mostrarMensaje('Error al eliminar el registro');
-    }
-}
-
-// Función para generar PDF
-async function generarPDF() {
-    const fechaInicio = document.getElementById('fechaInicioPDF').value;
-    const fechaFin = document.getElementById('fechaFinPDF').value;
-    const salaSeleccionada = document.getElementById('salaFiltro').value;
-    
-    if (!fechaInicio || !fechaFin) {
-        alert('Por favor, seleccione un rango de fechas');
-        return;
-    }
-    
-    try {
-        let tareas = obtenerTareasDelStorage();
-        tareas = tareas.filter(tarea => {
-            const fechaTarea = new Date(tarea.fecha);
-            const inicio = new Date(fechaInicio);
-            const fin = new Date(fechaFin);
-            
-            const cumpleFecha = fechaTarea >= inicio && fechaTarea <= fin;
-            if (salaSeleccionada) {
-                return cumpleFecha && tarea.titulo === salaSeleccionada;
-            }
-            return cumpleFecha;
-        });
-        
-        // Crear PDF usando jsPDF
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        // Configurar el documento
-        doc.setFontSize(16);
-        doc.text('Informe de Tareas', 20, 20);
-        
-        let yPos = 40;
-        tareas.forEach(tarea => {
-            if (yPos > 250) {
-                doc.addPage();
-                yPos = 20;
-            }
-            
-            doc.setFontSize(12);
-            doc.text(`Sala: ${tarea.titulo}`, 20, yPos);
-            doc.text(`Fecha: ${new Date(tarea.fecha).toLocaleDateString()}`, 20, yPos + 7);
-            doc.text(`Horario: ${tarea.horaInicio} - ${tarea.horaFin}`, 20, yPos + 14);
-            doc.text(`Prioridad: ${tarea.prioridad}`, 20, yPos + 21);
-            doc.text('Descripción:', 20, yPos + 28);
-            
-            const descripcionLines = doc.splitTextToSize(tarea.descripcion, 170);
-            doc.setFontSize(10);
-            doc.text(descripcionLines, 20, yPos + 35);
-            
-            yPos += 50 + (descripcionLines.length * 5);
-        });
-        
-        // Guardar el PDF
-        doc.save(`informe_${fechaInicio}_${fechaFin}.pdf`);
-        
-    } catch (error) {
-        console.error('Error al generar PDF:', error);
-        mostrarMensaje('Error al generar el informe PDF');
-    }
-}
-
-// Agregar estilos para el modal de fotos
-const estilosModal = document.createElement('style');
-estilosModal.textContent = `
-    .modal-foto {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.9);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-    
-    .modal-contenido {
-        position: relative;
-        max-width: 90%;
-        max-height: 90%;
-    }
-    
-    .modal-contenido img {
-        max-width: 100%;
-        max-height: 90vh;
-        object-fit: contain;
-    }
-    
-    .cerrar-modal {
-        position: absolute;
-        top: -30px;
-        right: 0;
-        color: white;
-        font-size: 30px;
-        cursor: pointer;
-    }
-`;
-document.head.appendChild(estilosModal);
 
 // Inicializar la aplicación
 document.addEventListener('DOMContentLoaded', () => {
