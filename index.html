@@ -18,14 +18,11 @@
                     <div class="card-body">
                         <form id="tareaForm">
                             <div class="row mb-3">
-<button id="toggleHistorial" class="btn btn-primary">Mostrar Historial</button>
-<button id="generarPDF" class="btn btn-secondary">Generar PDF</button>
-<div id="historialContainer" class="hidden">
-    <div id="historialTareas"></div>
-</div>                                <div class="col-md-6">
+                                <div class="col-md-6">
                                     <label class="form-label"><strong>Sala</strong></label>
                                     <input type="text" class="form-control" id="titulo" list="salasList" required>
-                  <div id="mensaje" class="mensaje" style="display: none;"></div>                  <datalist id="salasList">
+                                    <div id="mensaje" class="mensaje" style="display: none;"></div>
+                                    <datalist id="salasList">
                                         <!-- Las opciones se llenarán dinámicamente -->
                                     </datalist>
                                 </div>
@@ -67,9 +64,7 @@
 
                             <div class="d-flex justify-content-between">
                                 <button type="submit" class="btn btn-primary">Guardar Tarea</button>
-                                <button type="button" class="btn btn-secondary" id="toggleHistorial">
-                                    Mostrar Historial
-                                </button>
+                                <button type="button" class="btn btn-secondary" id="toggleHistorial">Mostrar Historial</button>
                             </div>
                         </form>
                     </div>
@@ -101,13 +96,9 @@
                                     <option value="">Todas las salas</option>
                                 </select>
                             </div>
-                            <button class="btn btn-primary w-100" onclick="generarPDF()">
-                                Generar PDF
-                            </button>
+                            <button class="btn btn-primary w-100" onclick="generarPDF()">Generar PDF</button>
                         </div>
-                        <button class="btn btn-success mt-3 w-100" id="generarPDF" onclick="mostrarSelectorFechas()">
-                            Generar Informe PDF
-                        </button>
+                        <button class="btn btn-success mt-3 w-100" onclick="mostrarSelectorFechas()">Generar Informe PDF</button>
                     </div>
                 </div>
             </div>
