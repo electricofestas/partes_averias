@@ -291,7 +291,7 @@ tareaForm.addEventListener('submit', async function(e) {
         }
 
         if (!validarFecha(fecha)) {
-            return; // El mensaje se muestra en la función validarFecha
+            return;
         }
 
         if (!horaInicio || !horaFin) {
@@ -337,6 +337,9 @@ tareaForm.addEventListener('submit', async function(e) {
             indicesTareas.push(tarea.id);
             localStorage.setItem('indicesTareas', JSON.stringify(indicesTareas));
         }
+
+        // Guardar la sala en la lista de salas
+        guardarNuevaSala(titulo);
 
         // Limpiar el formulario y restablecer el estado
         tareaForm.reset();
@@ -528,7 +531,7 @@ tareaForm.addEventListener('submit', async function(e) {
         }
 
         if (!validarFecha(fecha)) {
-            return; // El mensaje se muestra en la función validarFecha
+            return;
         }
 
         if (!horaInicio || !horaFin) {
