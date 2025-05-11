@@ -188,25 +188,19 @@ function actualizarSelectorSalasPDF() {
 }
 
 // Función para mostrar/ocultar el historial
-// Función para mostrar/ocultar el historial
 function toggleHistorial() {
-    const historialContainer = document.getElementById('historialContainer');
-    const toggleHistorialBtn = document.getElementById('toggleHistorial');
-    
-    if (!historialContainer || !toggleHistorialBtn) {
-        console.error('No se encontraron los elementos necesarios');
-        return;
-    }
-    
     if (historialContainer.classList.contains('hidden')) {
         historialContainer.classList.remove('hidden');
         toggleHistorialBtn.textContent = 'Ocultar Historial';
-        mostrarTareas(); // Actualizamos el historial al mostrarlo
+        mostrarTareas(); // Aseguramos que se muestren las tareas al abrir
     } else {
         historialContainer.classList.add('hidden');
         toggleHistorialBtn.textContent = 'Mostrar Historial';
     }
 }
+
+// Evento para mostrar/ocultar historial (reemplazar el evento existente)
+toggleHistorialBtn.addEventListener('click', toggleHistorial);
 
 // Inicializar la aplicación
 document.addEventListener('DOMContentLoaded', () => {
