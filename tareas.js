@@ -459,8 +459,6 @@ function generarPDF() {
     }
 }
 
-// ...
-
 document.addEventListener('DOMContentLoaded', () => {
     // Mostrar el historial inicialmente
     if (historialContainer) {
