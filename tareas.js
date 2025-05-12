@@ -140,7 +140,103 @@ function mostrarMensaje(mensaje) {
             mensajeElement.style.display = 'none';
         }, 3000);
     }
-}// Función para mostrar/ocultar el historial
+}
+
+function generarPDF() {
+    const fechaInicio = document.getElementById('fechaInicioPDF').value;
+    const fechaFin = document.getElementById('fechaFinPDF').value;
+    const salaFiltro = document.getElementById('salaFiltro').value;
+    
+    if (!fechaInicio || !fechaFin) {
+        mostrarMensaje('Por favor, seleccione un rango de fechas');
+        return;
+    }
+
+    try {
+        const tareas = obtenerTareasDelStorage().filter(tarea => {
+            const fechaTarea = new Date(tarea.fecha);
+            const inicio = new Date(fechaInicio);
+            const fin = new Date(fechaFin);
+            
+            // Ajustar las fechas para ignorar la hora
+            inicio.setHours(0, 0, 0, 0);
+            fin.setHours(23, 59, 59, 999);
+            
+            const cumpleFecha = fechaTarea >= inicio && fechaTarea <= fin;
+            const cumpleSala = !salaFiltro || tarea.titulo === salaFiltro;
+            
+            return cumpleFecha && cumpleSala;
+        });
+
+        if (tareas.length === 0) {
+            mostrarMensaje('No hay tareas para el período seleccionado');
+            return;
+        }
+
+        // Crear el PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Configuración inicial
+        doc.setFont('helvetica');
+        doc.setFontSize(16);
+        doc.text('Informe de Tareas', 105, 20, { align: 'center' });
+        
+        // Información del período
+        doc.setFontSize(12);
+        doc.text(`Período: ${new Date(fechaInicio).toLocaleDateString()} - ${new Date(fechaFin).toLocaleDateString()}`, 20, 30);
+        if (salaFiltro) {
+            doc.text(`Sala: ${salaFiltro}`, 20, 40);
+        }
+
+        let yPos = 50;
+        const margen = 20;
+        const lineHeight = 7;
+
+        tareas.forEach((tarea, index) => {
+            // Verificar si necesitamos una nueva página
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${index + 1}. ${tarea.titulo}`, margen, yPos);
+            yPos += lineHeight;
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text(`Fecha: ${new Date(tarea.fecha).toLocaleDateString()}`, margen, yPos);
+            yPos += lineHeight;
+            
+            doc.text(`Horario: ${tarea.horaInicio} - ${tarea.horaFin}`, margen, yPos);
+            yPos += lineHeight;
+            
+            doc.text(`Prioridad: ${tarea.prioridad}`, margen, yPos);
+            yPos += lineHeight;
+            
+            // Dividir descripción en líneas si es muy larga
+            const descripcionLineas = doc.splitTextToSize(tarea.descripcion, 170);
+            descripcionLineas.forEach(linea => {
+                doc.text(linea, margen, yPos);
+                yPos += lineHeight;
+            });
+
+            yPos += lineHeight; // Espacio extra entre tareas
+        });
+
+        // Guardar el PDF
+        doc.save(`informe_tareas_${fechaInicio}_${fechaFin}.pdf`);
+        mostrarMensaje('PDF generado correctamente');
+
+    } catch (error) {
+        console.error('Error al generar PDF:', error);
+        mostrarMensaje('Error al generar el PDF');
+    }
+}
+
+// Función para mostrar/ocultar el historial
 function toggleHistorial() {
     const historialContainer = document.getElementById('historialContainer');
     const toggleHistorialBtn = document.getElementById('toggleHistorial');
@@ -182,4 +278,11 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleHistorialBtn.textContent = 'Mostrar Historial';
         toggleHistorialBtn.addEventListener('click', toggleHistorial);
     }
-});
+    
+    function mostrarSelectorFechas() {
+        const fechaFiltroContainer = document.getElementById('fechaFiltroContainer');
+        if (fechaFiltroContainer) {
+            fechaFiltroContainer.classList.remove('hidden');
+        }
+    }
+}
