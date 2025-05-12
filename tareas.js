@@ -360,3 +360,132 @@ function mostrarTareas() {
         mostrarMensaje('Error al cargar el historial');
     }
 }
+
+// Función para guardar una tarea
+function guardarTarea(event) {
+    event.preventDefault();
+    
+    try {
+        // Obtener los valores del formulario
+        const titulo = document.getElementById('titulo').value;
+        const prioridad = document.getElementById('prioridad').value;
+        const fecha = document.getElementById('fecha').value;
+        const horaInicio = document.getElementById('horaInicio').value;
+        const horaFin = document.getElementById('horaFin').value;
+        const descripcion = document.getElementById('descripcion').value;
+        const fotosInput = document.getElementById('fotos');
+        
+        // Validaciones básicas
+        if (!titulo || !fecha || !horaInicio || !horaFin || !descripcion) {
+            mostrarMensaje('Por favor, complete todos los campos requeridos');
+            return;
+        }
+
+        // Crear ID único para la tarea
+        const id = 'tarea_' + Date.now();
+        
+        // Procesar las fotos si existen
+        const fotos = [];
+        if (fotosInput.files.length > 0) {
+            Array.from(fotosInput.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    fotos.push(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Crear objeto de tarea
+        const tarea = {
+            id: id,
+            titulo: titulo,
+            prioridad: prioridad,
+            fecha: fecha,
+            horaInicio: horaInicio,
+            horaFin: horaFin,
+            descripcion: descripcion,
+            fotos: fotos,
+            fechaCreacion: new Date().toISOString(),
+            fechaModificacion: new Date().toISOString(),
+            version: 1
+        };
+
+        // Guardar la tarea en localStorage
+        localStorage.setItem(id, JSON.stringify(tarea));
+        
+        // Actualizar el índice de tareas
+        const indicesTareas = JSON.parse(localStorage.getItem('indicesTareas')) || [];
+        indicesTareas.push(id);
+        localStorage.setItem('indicesTareas', JSON.stringify(indicesTareas));
+
+        // Limpiar el formulario
+        document.getElementById('tareaForm').reset();
+        document.getElementById('fotosPreview').innerHTML = '';
+        
+        mostrarMensaje('Tarea guardada correctamente');
+        
+        // Actualizar el historial si está visible
+        const historialContainer = document.getElementById('historialContainer');
+        if (!historialContainer.classList.contains('hidden')) {
+            mostrarTareas();
+        }
+    } catch (error) {
+        console.error('Error al guardar la tarea:', error);
+        mostrarMensaje('Error al guardar la tarea');
+    }
+}
+
+// Función para mostrar vista previa de las fotos
+function mostrarVistaPrevia() {
+    const fotosInput = document.getElementById('fotos');
+    const previewContainer = document.getElementById('fotosPreview');
+    previewContainer.innerHTML = '';
+
+    Array.from(fotosInput.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewDiv = document.createElement('div');
+            previewDiv.className = 'foto-preview';
+            previewDiv.innerHTML = `<img src="${e.target.result}" alt="Vista previa">`;
+            previewContainer.appendChild(previewDiv);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Agregar los event listeners necesarios
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleHistorialBtn = document.getElementById('toggleHistorial');
+    const historialContainer = document.getElementById('historialContainer');
+    const fechaFiltroContainer = document.getElementById('fechaFiltroContainer');
+    
+    // Asegurarse de que el historial y el filtro estén ocultos inicialmente
+    if (historialContainer) {
+        historialContainer.style.display = 'none';
+        historialContainer.classList.add('hidden');
+    }
+    
+    if (fechaFiltroContainer) {
+        fechaFiltroContainer.style.display = 'none';
+        fechaFiltroContainer.classList.add('hidden');
+    }
+    
+    // Configurar el botón de historial
+    if (toggleHistorialBtn) {
+        toggleHistorialBtn.textContent = 'Mostrar Historial';
+        toggleHistorialBtn.addEventListener('click', toggleHistorial);
+    }
+    
+    // Agregar el event listener para el formulario
+    const formulario = document.getElementById('tareaForm');
+    if (formulario) {
+        formulario.addEventListener('submit', guardarTarea);
+    }
+    
+    // Agregar el event listener para la vista previa de fotos
+    const fotosInput = document.getElementById('fotos');
+    if (fotosInput) {
+        fotosInput.addEventListener('change', mostrarVistaPrevia);
+    }
+});
