@@ -1,56 +1,50 @@
 // ... existing code ...
-.hidden {
-    display: none !important;
-}
-
-.tarea-item {
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-}
-
-.tarea-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.botones-tarea {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-editar, .btn-eliminar {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-}
-
-.btn-editar {
-    background-color: #ffc107;
-}
-
-.btn-eliminar {
-    background-color: #dc3545;
-    color: white;
-}
-
-.fotos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.foto-item img {
+.modal-foto {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 5px;
+    height: 100%;
+    background-color: rgba(0,0,0,0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.texto-subrayado {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+}
+.modal-contenido {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+}
+
+.modal-contenido img {
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
+.cerrar-modal {
+    position: absolute;
+    top: -30px;
+    right: 0;
+    color: white;
+    font-size: 30px;
     cursor: pointer;
+}
+
+.btn-secondary {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+.btn-secondary:hover {
+    background-color: #218838 !important;
+    border-color: #1e7e34 !important;
 }
 
 .btn-secondary {
