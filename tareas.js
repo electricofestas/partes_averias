@@ -181,7 +181,7 @@ function mostrarSelectorFechas() {
 }
 
 function generarPDF() {
-    const { jsPDF } = window.jspdf;
+    // Inicializar jsPDF correctamente
     const doc = new jsPDF();
     
     const fechaInicio = document.getElementById('fechaInicioPDF').value;
@@ -201,6 +201,9 @@ function generarPDF() {
         const inicio = new Date(fechaInicio);
         const fin = new Date(fechaFin);
         
+        inicio.setHours(0, 0, 0, 0);
+        fin.setHours(23, 59, 59, 999);
+        
         const cumpleFecha = fechaTarea >= inicio && fechaTarea <= fin;
         const cumpleSala = !salaSeleccionada || tarea.titulo === salaSeleccionada;
         
@@ -212,54 +215,59 @@ function generarPDF() {
         return;
     }
 
-    // Configurar el documento
-    doc.setFontSize(16);
-    doc.text('Informe de Tareas', 20, 20);
-    
-    doc.setFontSize(12);
-    doc.text(`Período: ${new Date(fechaInicio).toLocaleDateString()} - ${new Date(fechaFin).toLocaleDateString()}`, 20, 30);
-    if (salaSeleccionada) {
-        doc.text(`Sala: ${salaSeleccionada}`, 20, 40);
-    }
-
-    let yPos = 50;
-    
-    // Agregar cada tarea al PDF
-    tareas.forEach((tarea, index) => {
-        if (yPos > 250) {
-            doc.addPage();
-            yPos = 20;
+    try {
+        // Configurar el documento
+        doc.setFontSize(16);
+        doc.text('Informe de Tareas', 20, 20);
+        
+        doc.setFontSize(12);
+        doc.text(`Período: ${new Date(fechaInicio).toLocaleDateString()} - ${new Date(fechaFin).toLocaleDateString()}`, 20, 30);
+        if (salaSeleccionada) {
+            doc.text(`Sala: ${salaSeleccionada}`, 20, 40);
         }
 
-        doc.setFontSize(12);
-        doc.text(`Tarea ${index + 1}: ${tarea.titulo}`, 20, yPos);
-        yPos += 10;
+        let yPos = 50;
         
-        doc.setFontSize(10);
-        doc.text(`Fecha: ${new Date(tarea.fecha).toLocaleDateString()}`, 25, yPos);
-        yPos += 7;
-        doc.text(`Horario: ${tarea.horaInicio} - ${tarea.horaFin}`, 25, yPos);
-        yPos += 7;
-        doc.text(`Prioridad: ${tarea.prioridad}`, 25, yPos);
-        yPos += 7;
-        
-        // Dividir la descripción en líneas si es muy larga
-        const descripcionLineas = doc.splitTextToSize(`Descripción: ${tarea.descripcion}`, 170);
-        descripcionLineas.forEach(linea => {
+        // Agregar cada tarea al PDF
+        tareas.forEach((tarea, index) => {
             if (yPos > 250) {
                 doc.addPage();
                 yPos = 20;
             }
-            doc.text(linea, 25, yPos);
-            yPos += 7;
-        });
-        
-        yPos += 10;
-    });
 
-    // Guardar el PDF
-    doc.save(`informe_tareas_${new Date().toISOString().split('T')[0]}.pdf`);
-    mostrarMensaje('PDF generado exitosamente');
+            doc.setFontSize(12);
+            doc.text(`Tarea ${index + 1}: ${tarea.titulo}`, 20, yPos);
+            yPos += 10;
+            
+            doc.setFontSize(10);
+            doc.text(`Fecha: ${new Date(tarea.fecha).toLocaleDateString()}`, 25, yPos);
+            yPos += 7;
+            doc.text(`Horario: ${tarea.horaInicio} - ${tarea.horaFin}`, 25, yPos);
+            yPos += 7;
+            doc.text(`Prioridad: ${tarea.prioridad}`, 25, yPos);
+            yPos += 7;
+            
+            // Dividir la descripción en líneas si es muy larga
+            const descripcionLineas = doc.splitTextToSize(`Descripción: ${tarea.descripcion}`, 170);
+            descripcionLineas.forEach(linea => {
+                if (yPos > 250) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                doc.text(linea, 25, yPos);
+                yPos += 7;
+            });
+            
+            yPos += 10;
+        });
+
+        // Guardar el PDF
+        doc.save(`informe_tareas_${new Date().toISOString().split('T')[0]}.pdf`);
+        mostrarMensaje('PDF generado exitosamente');
+    } catch (error) {
+        console.error('Error al generar PDF:', error);
+        mostrarMensaje('Error al generar el PDF');
+    }
 }
 
 // Función para mostrar/ocultar el historial
