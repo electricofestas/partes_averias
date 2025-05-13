@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event Listeners
     form.addEventListener('submit', guardarTarea);
-    toggleHistorialBtn.addEventListener('submit', toggleHistorial);
+    toggleHistorialBtn.addEventListener('click', toggleHistorial); // Cambiado de 'submit' a 'click'
     fotosInput.addEventListener('change', mostrarPreviewFotos);
 
     // Cargar historial inicial
@@ -84,23 +84,18 @@ function guardarTarea(e) {
 function toggleHistorial() {
     const historialContainer = document.getElementById('historialContainer');
     const toggleBtn = document.getElementById('toggleHistorial');
-    const fechaFiltroContainer = document.getElementById('fechaFiltroContainer');
     
     if (!historialContainer || !toggleBtn) {
         console.error('No se encontraron los elementos necesarios');
         return;
     }
     
-    const estaOculto = historialContainer.classList.contains('hidden');
-    
-    if (estaOculto) {
-        historialContainer.classList.remove('hidden');
-        fechaFiltroContainer.classList.remove('hidden');
+    if (historialContainer.style.display === 'none' || !historialContainer.style.display) {
+        historialContainer.style.display = 'block';
         toggleBtn.textContent = 'Ocultar Historial';
-        mostrarTareas(); // Actualizamos el historial al mostrarlo
+        actualizarHistorial(); // Actualizamos el contenido del historial
     } else {
-        historialContainer.classList.add('hidden');
-        fechaFiltroContainer.classList.add('hidden');
+        historialContainer.style.display = 'none';
         toggleBtn.textContent = 'Mostrar Historial';
     }
 }
