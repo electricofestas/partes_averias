@@ -122,6 +122,14 @@ function toggleHistorial() {
     }
 }
 
+// Función para editar una tarea
+function editarTarea(id) {
+    const tarea = tareas.find(t => t.id === parseInt(id));
+    if (!tarea) {
+        mostrarMensaje('No se encontró la tarea', 'danger');
+        return;
+    }
+
     // Rellenar el formulario con los datos de la tarea
     document.getElementById('titulo').value = tarea.sala;
     document.getElementById('prioridad').value = tarea.prioridad;
@@ -156,7 +164,7 @@ function toggleHistorial() {
     // Hacer scroll al formulario
     form.scrollIntoView({ behavior: 'smooth' });
     mostrarMensaje('Editando tarea...', 'info');
-
+}
 
 // Modificar la función actualizarHistorial para incluir el botón de editar
 function actualizarHistorial() {
@@ -181,7 +189,17 @@ function actualizarHistorial() {
                 <strong>Prioridad:</strong> <span class="badge ${getPrioridadBadgeClass(tarea.prioridad)}">${tarea.prioridad}</span><br>
                 <strong>Descripción:</strong> ${tarea.descripcion}
             </p>
-            ${tarea.fotos.map(foto => `<img src="${foto}" class="img-thumbnail" style="max-width: 100px;">`).join('')}
+            ${tarea.fotos && tarea.fotos.length > 0 ? `
+                <div class="fotos-container mt-2">
+                    <div class="d-flex flex-wrap gap-2">
+                        ${tarea.fotos.map(foto => `
+                            <div class="foto-preview">
+                                <img src="${foto}" alt="Foto de la tarea" class="img-thumbnail" style="max-width: 100px;">
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
             <div class="d-flex justify-content-end gap-2 mt-2">
                 <button class="btn btn-primary btn-sm" onclick="editarTarea(${tarea.id})">Editar</button>
                 <button class="btn btn-danger btn-sm" onclick="eliminarTarea(${tarea.id})">Eliminar</button>
@@ -288,7 +306,7 @@ function eliminarTarea(id) {
     }
     // Función para editar una tarea
 function editarTarea(id) {
-    const tarea = tareas.find(t => t.id === id);
+    const tarea = tareas.find(t => t.id === parseInt(id));
     if (!tarea) {
         mostrarMensaje('No se encontró la tarea', 'danger');
         return;
