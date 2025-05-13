@@ -46,8 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function guardarTarea(e) {
     e.preventDefault();
     
+    const form = document.getElementById('tareaForm');
+    const editandoId = form.dataset.editandoId;
+    
     const tarea = {
-        id: Date.now(),
+        id: editandoId ? parseInt(editandoId) : Date.now(),
         sala: document.getElementById('titulo').value,
         prioridad: document.getElementById('prioridad').value,
         fecha: document.getElementById('fecha').value,
@@ -68,15 +71,34 @@ function guardarTarea(e) {
     });
 
     Promise.all(fotosPromises).then(fotosBase64 => {
-        tarea.fotos = fotosBase64;
-        tareas.push(tarea);
+        // Si estamos editando, mantener las fotos existentes si no se agregaron nuevas
+        if (editandoId) {
+            const tareaExistente = tareas.find(t => t.id === parseInt(editandoId));
+            tarea.fotos = fotosBase64.length > 0 ? fotosBase64 : tareaExistente.fotos;
+            
+            // Actualizar la tarea existente
+            const index = tareas.findIndex(t => t.id === parseInt(editandoId));
+            if (index !== -1) {
+                tareas[index] = tarea;
+            }
+        } else {
+            tarea.fotos = fotosBase64;
+            tareas.push(tarea);
+        }
+        
         localStorage.setItem('tareas', JSON.stringify(tareas));
         
-        document.getElementById('tareaForm').reset();
+        // Resetear el formulario y limpiar el modo edición
+        form.reset();
+        delete form.dataset.editandoId;
         document.getElementById('fotosPreview').innerHTML = '';
-        actualizarHistorial();
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.textContent = 'Guardar Tarea';
+        }
         
-        mostrarMensaje('Tarea guardada correctamente', 'success');
+        actualizarHistorial();
+        mostrarMensaje(editandoId ? 'Tarea actualizada correctamente' : 'Tarea guardada correctamente', 'success');
     });
 }
 
