@@ -122,14 +122,6 @@ function toggleHistorial() {
     }
 }
 
-// Función para editar una tarea
-function editarTarea(id) {
-    const tarea = tareas.find(t => t.id === id);
-    if (!tarea) {
-        mostrarMensaje('No se encontró la tarea', 'danger');
-        return;
-    }
-
     // Rellenar el formulario con los datos de la tarea
     document.getElementById('titulo').value = tarea.sala;
     document.getElementById('prioridad').value = tarea.prioridad;
@@ -164,7 +156,7 @@ function editarTarea(id) {
     // Hacer scroll al formulario
     form.scrollIntoView({ behavior: 'smooth' });
     mostrarMensaje('Editando tarea...', 'info');
-}
+
 
 // Modificar la función actualizarHistorial para incluir el botón de editar
 function actualizarHistorial() {
@@ -294,6 +286,12 @@ function eliminarTarea(id) {
         actualizarHistorial();
         mostrarMensaje('Tarea eliminada correctamente', 'success');
     }
+    // Función para editar una tarea
+function editarTarea(id) {
+    const tarea = tareas.find(t => t.id === id);
+    if (!tarea) {
+        mostrarMensaje('No se encontró la tarea', 'danger');
+        return;
 }
 
 // Función para mostrar preview de fotos
