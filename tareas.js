@@ -1,133 +1,69 @@
+// Función para obtener tareas del storage
 function obtenerTareasDelStorage() {
-    try {
-        const indicesTareas = JSON.parse(localStorage.getItem('indicesTareas')) || [];
-        return indicesTareas
-            .map(id => {
-                try {
-                    return JSON.parse(localStorage.getItem(id));
-                } catch {
-                    return null;
-                }
-            })
-            .filter(tarea => tarea !== null);
-    } catch (error) {
-        console.error('Error al obtener tareas:', error);
-        return [];
-    }
+    const indicesTareas = JSON.parse(localStorage.getItem('indicesTareas')) || [];
+    return indicesTareas.map(id => JSON.parse(localStorage.getItem(id))).filter(Boolean);
 }
 
-// Función para mostrar/ocultar el historial
-function toggleHistorial() {
-    const historialContainer = document.getElementById('historialContainer');
-    const toggleHistorialBtn = document.getElementById('toggleHistorial');
-    const historialTareas = document.getElementById('historialTareas');
-    const fechaFiltroContainer = document.getElementById('fechaFiltroContainer');
-    
-    if (!historialContainer || !toggleHistorialBtn || !historialTareas) {
-        console.error('No se encontraron los elementos necesarios');
-        return;
-    }
-    
-    // Cambiar la visibilidad del contenedor
-    const estaOculto = historialContainer.style.display === 'none' || historialContainer.classList.contains('hidden');
-    
-    if (estaOculto) {
-        historialContainer.style.display = 'block';
-        historialContainer.classList.remove('hidden');
-        fechaFiltroContainer.classList.remove('hidden');
-        toggleHistorialBtn.textContent = 'Ocultar Historial';
-        mostrarTareas(); // Actualizamos el historial solo cuando se muestra
-    } else {
-        historialContainer.style.display = 'none';
-        historialContainer.classList.add('hidden');
-        fechaFiltroContainer.classList.add('hidden');
-        toggleHistorialBtn.textContent = 'Mostrar Historial';
-    }
-}
-
-// Función para mostrar las tareas
+// Función para mostrar tareas en el historial
 function mostrarTareas() {
     const historialTareas = document.getElementById('historialTareas');
-    if (!historialTareas) {
-        console.error('No se encontró el contenedor del historial');
-        return;
-    }
+    const tareas = obtenerTareasDelStorage();
+    
+    historialTareas.innerHTML = '';
+    
+    tareas.forEach(tarea => {
+        const elemento = document.createElement('div');
+        elemento.className = 'list-group-item';
+        elemento.innerHTML = `
+            <h6>${tarea.titulo} - ${tarea.fecha}</h6>
+            <p><strong>Prioridad:</strong> ${tarea.prioridad}</p>
+            <p><strong>Horario:</strong> ${tarea.horaInicio} - ${tarea.horaFin}</p>
+            <p>${tarea.descripcion}</p>
+            <div class="d-flex justify-content-end gap-2">
+                <button class="btn btn-sm btn-primary" onclick="editarRegistro('${tarea.id}')">Editar</button>
+                <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('${tarea.id}')">Eliminar</button>
+            </div>
+        `;
+        historialTareas.appendChild(elemento);
+    });
+}
 
-    try {
-        const tareas = obtenerTareasDelStorage();
-        historialTareas.innerHTML = ''; // Limpiar el contenedor
-
-        if (tareas.length === 0) {
-            historialTareas.innerHTML = '<p class="text-center">No hay tareas guardadas</p>';
-            return;
-        }
-
-        // Ordenar tareas por fecha de modificación (más reciente primero)
-        tareas.sort((a, b) => new Date(b.fechaModificacion) - new Date(a.fechaModificacion));
-
-        tareas.forEach(tarea => {
-            const tareaElement = document.createElement('div');
-            tareaElement.className = 'tarea-item';
-            tareaElement.innerHTML = `
-                <div class="tarea-header">
-                    <h3>${tarea.titulo}</h3>
-                    <div class="botones-tarea">
-                        <button onclick="editarRegistro('${tarea.id}')" class="btn-editar">Editar</button>
-                        <button onclick="eliminarRegistro('${tarea.id}')" class="btn-eliminar">Eliminar</button>
-                    </div>
-                </div>
-                <div class="tarea-contenido">
-                    <p><strong>Fecha:</strong> ${new Date(tarea.fecha).toLocaleDateString()}</p>
-                    <p><strong>Horario:</strong> ${tarea.horaInicio} - ${tarea.horaFin}</p>
-                    <p><strong>Prioridad:</strong> ${tarea.prioridad}</p>
-                    <p><strong>Descripción:</strong> ${tarea.descripcion}</p>
-                </div>
-                ${tarea.fotos && tarea.fotos.length > 0 ? `
-                    <div class="fotos-container">
-                        <p><strong>Fotos:</strong></p>
-                        <div class="fotos-grid">
-                            ${tarea.fotos.map(foto => `
-                                <div class="foto-item" onclick="mostrarFotoModal('${foto}')">
-                                    <img src="${foto}" alt="Foto de la tarea">
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                ` : ''}
-                <div class="version-info">
-                    <small>Versión: ${tarea.version || 1}</small>
-                    ${tarea.fechaModificacion ? `<br><small>Última modificación: ${new Date(tarea.fechaModificacion).toLocaleString()}</small>` : ''}
-                </div>
-            `;
-            historialTareas.appendChild(tareaElement);
-        });
-    } catch (error) {
-        console.error('Error al mostrar registros:', error);
-        mostrarMensaje('Error al cargar el historial');
+// Función para alternar la visibilidad del historial
+function toggleHistorial() {
+    const historialContainer = document.getElementById('historialContainer');
+    const toggleBtn = document.getElementById('toggleHistorial');
+    
+    historialContainer.classList.toggle('hidden');
+    toggleBtn.textContent = historialContainer.classList.contains('hidden') ? 
+        'Mostrar Historial' : 'Ocultar Historial';
+    
+    if (!historialContainer.classList.contains('hidden')) {
+        mostrarTareas();
     }
 }
 
-// Inicializar la aplicación cuando el DOM esté cargado
+// Agregar los event listeners necesarios al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
+    const formulario = document.getElementById('tareaForm');
+    const fotosInput = document.getElementById('fotos');
     const toggleHistorialBtn = document.getElementById('toggleHistorial');
-    const historialContainer = document.getElementById('historialContainer');
     const fechaFiltroContainer = document.getElementById('fechaFiltroContainer');
-    
-    // Asegurarse de que el historial y el filtro estén ocultos inicialmente
-    if (historialContainer) {
-        historialContainer.style.display = 'none';
-        historialContainer.classList.add('hidden');
+
+    if (formulario) {
+        formulario.addEventListener('submit', guardarTarea);
     }
-    
-    if (fechaFiltroContainer) {
-        fechaFiltroContainer.style.display = 'none';
-        fechaFiltroContainer.classList.add('hidden');
+
+    if (fotosInput) {
+        fotosInput.addEventListener('change', mostrarVistaPrevia);
     }
-    
-    // Configurar el botón de historial
+
     if (toggleHistorialBtn) {
-        toggleHistorialBtn.textContent = 'Mostrar Historial';
         toggleHistorialBtn.addEventListener('click', toggleHistorial);
+    }
+
+    // Ocultar el contenedor de filtros inicialmente
+    if (fechaFiltroContainer) {
+        fechaFiltroContainer.classList.add('hidden');
     }
 });
 
