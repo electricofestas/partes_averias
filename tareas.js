@@ -115,7 +115,7 @@ function toggleHistorial() {
     if (historialContainer.style.display === 'none' || !historialContainer.style.display) {
         historialContainer.style.display = 'block';
         toggleBtn.textContent = 'Ocultar Historial';
-        actualizarHistorial(); // Actualizamos el contenido del historial
+        actualizarHistorial(); // Cambiado de mostrarTareas a actualizarHistorial
     } else {
         historialContainer.style.display = 'none';
         toggleBtn.textContent = 'Mostrar Historial';
@@ -276,7 +276,7 @@ function actualizarHistorial() {
             <p class="mb-1">
                 <strong>Fecha:</strong> ${tarea.fecha}<br>
                 <strong>Horario:</strong> ${tarea.horaInicio} - ${tarea.horaFin}<br>
-                <strong>Prioridad:</strong> ${tarea.prioridad}<br>
+                <strong>Prioridad:</strong> <span class="badge ${getPrioridadBadgeClass(tarea.prioridad)}">${tarea.prioridad}</span><br>
                 <strong>Descripción:</strong> ${tarea.descripcion}
             </p>
             ${tarea.fotos.map(foto => `<img src="${foto}" class="img-thumbnail" style="max-width: 100px;">`).join('')}
