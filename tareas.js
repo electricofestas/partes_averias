@@ -89,7 +89,7 @@ function guardarTarea(e) {
     if (tareaAEditarId !== null) {
        console.log("Entrando en el bloque de edición.");
       // Editar tarea existente
-      const indice = tareas.findIndex((tarea) => tarea.id == tareaAEditarId);
+      const indice = tareas.findIndex((tarea) => tarea.id === tareaAEditarId);
       console.log("Índice de la tarea a editar:", indice);
       if (indice !== -1) {
           tareas[indice] = { id: tareaAEditarId, ...tareaActualizada };
