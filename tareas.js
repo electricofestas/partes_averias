@@ -179,8 +179,7 @@ function actualizarHistorial() {
                       tarea.id
                     }')">Editar</button>
                     <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('${
-                      tarea.id
-                    }')">Eliminar</button>
+                      tarea.id}')">Eliminar</button>
                 </div>
             `;
       historialTareas.appendChild(tareaElement);
@@ -190,15 +189,15 @@ function actualizarHistorial() {
 // Función para cargar los datos de una tarea en el formulario para editar
 
 function editarRegistro(id) {
-  console.log("Función editarRegistro llamada con ID:", id);
-  const tareaAEditar = tareas.find((tarea) => tarea.id === id);
+  console.log("Función editarRegistro llamada con ID:", id, typeof id);
+  const tareaAEditar = tareas.find((tarea) => String(tarea.id) === String(id));
   if (tareaAEditar) {
-    document.getElementById("titulo:").value = tareaAEditar.sala;
-    document.getElementById("prioridad:").value = tareaAEditar.prioridad;
-    document.getElementById("fecha:").value = tareaAEditar.fecha;
-    document.getElementById("horaInicio:").value = tareaAEditar.horaInicio;
-    document.getElementById("horaFin:").value = tareaAEditar.horaFin;
-    document.getElementById("descripcion:").value = tareaAEditar.descripcion;
+    document.getElementById("titulo").value = tareaAEditar.sala;
+    document.getElementById("prioridad").value = tareaAEditar.prioridad;
+    document.getElementById("fecha").value = tareaAEditar.fecha;
+    document.getElementById("horaInicio").value = tareaAEditar.horaInicio;
+    document.getElementById("horaFin").value = tareaAEditar.horaFin;
+    document.getElementById("descripcion").value = tareaAEditar.descripcion;
 
     // Limpiar la preview de fotos
     document.getElementById("fotosPreview").innerHTML = "";
