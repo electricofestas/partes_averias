@@ -87,18 +87,25 @@ function guardarTarea(e) {
     };
 
     if (tareaAEditarId !== null) {
+       console.log("Entrando en el bloque de edición.");
       // Editar tarea existente
-      const indice = tareas.findIndex((tarea) => tarea.id === tareaAEditarId);
+      const indice = tareas.findIndex((tarea) => tarea.id == tareaAEditarId);
+      console.log("Índice de la tarea a editar:", indice);
       if (indice !== -1) {
-        tareas[indice] = { id: tareaAEditarId, ...tareaActualizada };
-        mostrarMensaje("Tarea editada correctamente", "success");
-      }
-      tareaAEditarId = null; // Resetear el ID de edición
+          tareas[indice] = { id: tareaAEditarId, ...tareaActualizada };
+          mostrarMensaje("Tarea editada correctamente", "success");
+          console.log("Tareas después de la edición:", tareas);
+          localStorage.setItem("tareas", JSON.stringify(tareas));
+          actualizarHistorial(); 
+          tareaAEditarId = null; // Resetear el ID de edición
       const guardarBtn = document.querySelector('button[type="submit"]');
       if (guardarBtn) {
         guardarBtn.textContent = "Guardar Tarea"; // Restablecer el texto del botón
       }
     } else {
+        console.log("No se encontró la tarea con ID:", tareaAEditarId, "en el array tareas para editar.");
+       }
+   } else {
       // Guardar nueva tarea
       const nuevaTarea = { id: Date.now(), ...tareaActualizada };
       tareas.push(nuevaTarea);
