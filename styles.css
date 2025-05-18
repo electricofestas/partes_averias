@@ -1,6 +1,6 @@
 .foto-preview img {
-  width: 20px;        /* Cambia 80px al tamaño que prefieras */
-  height: 20px;
+  width: 50px;        /* Cambia 80px al tamaño que prefieras */
+  height: 50px;
   object-fit: cover;  /* Para que la imagen no se deforme y rellene el espacio */
   border-radius: 6px; /* Opcional: esquinas redondeadas */
   border: 1px solid #ddd; /* Opcional: un borde gris claro */
