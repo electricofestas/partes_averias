@@ -1,30 +1,8 @@
 .foto-preview img {
-  width: 80px;        /* Cambia 80px al tamaño que prefieras */
-  height: 80px;
+  width: 20px;        /* Cambia 80px al tamaño que prefieras */
+  height: 20px;
   object-fit: cover;  /* Para que la imagen no se deforme y rellene el espacio */
   border-radius: 6px; /* Opcional: esquinas redondeadas */
   border: 1px solid #ddd; /* Opcional: un borde gris claro */
   margin: 2px;
 }
-
-
-.hidden {
-    display: none !important;
-}   
-.texto-subrayado {
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 4px;
-}
-.modal-contenido {
-    position: relative;
-    max-width: 90%;
-    max-height: 90%;
-}
-
-.modal-contenido img {
-    max-width: 20%;
-    max-height: 20vh;
-    object-fit: contain;
-}
-
