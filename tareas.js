@@ -323,6 +323,11 @@ function generarPDF() {
 
   doc.setFontSize(16);
   doc.text("Informe de Tareas", 20, yPos);
+  
+  // Subrayado debajo del título
+const textWidth = doc.getTextWidth("Informe de Tareas");
+doc.setLineWidth(0.4); // Grosor del subrayado
+doc.line(20, yPos + 2, 20 + textWidth, yPos + 2);
   yPos += 10;
 
   doc.setFontSize(12);
@@ -343,15 +348,17 @@ function generarPDF() {
     }
 
     doc.setFontSize(14);
-    doc.text(`Sala: ${tarea.sala}`, 20, yPos);
+    const salaTexto = `Sala: ${tarea.sala}`;
+doc.text(salaTexto, 20, yPos);
+
+// Subrayado para Sala
+const salaTextWidth = doc.getTextWidth(salaTexto);
+doc.setLineWidth(0.5); // Puedes ajustar el grosor si lo deseas
+doc.line(20, yPos + 2, 20 + salaTextWidth, yPos + 2);
     yPos += 10;
 
     doc.setFontSize(12);
-    
-    // Subrayado para Sala
-    const salaTextWidth = doc.getTextWidth(salaTexto);
-    doc.setLineWidth(0.5); // Puedes ajustar el grosor si lo deseas
-    doc.line(20, yPos + 2, 20 + salaTextWidth, yPos + 2);
+    doc.text(`Fecha: ${tarea.fecha}`, 30, yPos);
     yPos += 7;
     doc.text(`Horario: ${tarea.horaInicio} - ${tarea.horaFin}`, 30, yPos);
     yPos += 7;
