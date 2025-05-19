@@ -347,7 +347,13 @@ function generarPDF() {
     yPos += 10;
 
     doc.setFontSize(12);
-    doc.text(`Fecha: ${tarea.fecha}`, 30, yPos);
+    const salaTexto = `Sala: ${tarea.sala}`;
+    doc.text(salaTexto, 20, yPos);
+
+    // Subrayado para Sala
+    const salaTextWidth = doc.getTextWidth(salaTexto);
+    doc.setLineWidth(0.5); // Puedes ajustar el grosor si lo deseas
+    doc.line(20, yPos + 2, 20 + salaTextWidth, yPos + 2);
     yPos += 7;
     doc.text(`Horario: ${tarea.horaInicio} - ${tarea.horaFin}`, 30, yPos);
     yPos += 7;
