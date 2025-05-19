@@ -347,9 +347,7 @@ function generarPDF() {
     yPos += 10;
 
     doc.setFontSize(12);
-    const salaTexto = `Sala: ${tarea.sala}`;
-    doc.text(salaTexto, 20, yPos);
-
+    
     // Subrayado para Sala
     const salaTextWidth = doc.getTextWidth(salaTexto);
     doc.setLineWidth(0.5); // Puedes ajustar el grosor si lo deseas
