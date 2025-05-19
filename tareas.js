@@ -348,7 +348,7 @@ doc.line(20, yPos + 2, 20 + textWidth, yPos + 2);
     }
 
     doc.setFontSize(14);
-    const salaTexto = `Sala: ${tarea.sala}`;
+    const salaTexto =tarea.sala;
 doc.text(salaTexto, 20, yPos);
 
 // Subrayado para Sala
