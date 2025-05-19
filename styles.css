@@ -6,3 +6,10 @@
   border: 1px solid #ddd; /* Opcional: un borde gris claro */
   margin: 2px;
 }
+input.form-control,
+textarea.form-control,
+select.form-control,
+select.form-select {
+  border-width: 3px !important;   /* Cambia 3px al grosor que prefieras */
+  border-color: #333 !important;  /* Cambia el color si lo deseas */
+}
