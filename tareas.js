@@ -86,11 +86,12 @@ function guardarTarea(e) {
   });
 }
 
-// Limpia todos los campos del formulario, incluyendo móviles
+// Limpia todos los campos del formulario, compatible móvil/escritorio
 function limpiarFormulario() {
   const form = document.getElementById("tareaForm");
-  // reset no siempre limpia en móviles, así que limpiamos manualmente también:
   form.reset();
+
+  // Limpieza manual de los campos para máxima compatibilidad móvil
   document.getElementById("titulo").value = "";
   document.getElementById("prioridad").selectedIndex = 0;
   document.getElementById("fecha").value = "";
@@ -98,7 +99,9 @@ function limpiarFormulario() {
   document.getElementById("horaFin").value = "";
   document.getElementById("descripcion").value = "";
   document.getElementById("fotos").value = "";
+
   document.getElementById("fotosPreview").innerHTML = "";
+
   form.classList.remove("was-validated");
 }
 
