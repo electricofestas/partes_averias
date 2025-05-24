@@ -80,19 +80,17 @@ function guardarTarea(e) {
 
     localStorage.setItem("tareas", JSON.stringify(tareas));
 
-    // Limpieza completa, compatible móvil y escritorio:
     limpiarFormulario();
 
     actualizarHistorial();
   });
 }
 
-// Limpia todos los campos del formulario, incluyendo manualmente los controles en móviles
+// Limpia todos los campos del formulario, incluyendo móviles
 function limpiarFormulario() {
   const form = document.getElementById("tareaForm");
+  // reset no siempre limpia en móviles, así que limpiamos manualmente también:
   form.reset();
-
-  // Limpieza manual de los campos para máxima compatibilidad móvil
   document.getElementById("titulo").value = "";
   document.getElementById("prioridad").selectedIndex = 0;
   document.getElementById("fecha").value = "";
@@ -100,10 +98,7 @@ function limpiarFormulario() {
   document.getElementById("horaFin").value = "";
   document.getElementById("descripcion").value = "";
   document.getElementById("fotos").value = "";
-
   document.getElementById("fotosPreview").innerHTML = "";
-
-  // Si el formulario tuviera validación visual, la quitamos:
   form.classList.remove("was-validated");
 }
 
