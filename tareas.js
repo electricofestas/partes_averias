@@ -1,67 +1,45 @@
 // Variables globales
 let tareas = JSON.parse(localStorage.getItem("tareas")) || [];
-let historialVisible = false;
-let tareaAEditarId = null; // Variable para rastrear el ID de la tarea que se está editando
+let tareaAEditarId = null;
 
-// Función para inicializar la aplicación
 document.addEventListener("DOMContentLoaded", () => {
-  // Inicializar elementos
   const form = document.getElementById("tareaForm");
   const toggleHistorialBtn = document.getElementById("toggleHistorial");
-  const historialContainer = document.getElementById("historialContainer");
   const fotosInput = document.getElementById("fotos");
-  const fotosPreview = document.getElementById("fotosPreview");
 
-  // Cargar salas desde localStorage o inicializar si no existen
+  // Salas por defecto
   let salas = JSON.parse(localStorage.getItem("salas")) || [
-    "Comida",
-    "Inst. Sanchez",
-    "Central",
-    "Edificio-Vecindario",
-    "Finca_Telde",
-    "Nave Arinaga",
-    "Sala La Mareta",
-    "Sala 7 Palmas",
-    "Sala San Telmo",
-    "Sala Tamaraceite",
-    "Sala Galdar",
-    "Sala Arinaga",
-    "Sala Sol y Sombra",
-    "Sala Kasbah",
-    "Sala Pama Cita",
-    "Sala Traiña",
-    "Sala Puerto Rico",
-    "Sala Mogán Mall",
-    "Sala Mogán"
+    "Comida", "Inst. Sanchez", "Central", "Edificio-Vecindario", "Finca_Telde", "Nave Arinaga",
+    "Sala La Mareta", "Sala 7 Palmas", "Sala San Telmo", "Sala Tamaraceite", "Sala Galdar",
+    "Sala Arinaga", "Sala Sol y Sombra", "Sala Kasbah", "Sala Pama Cita", "Sala Traiña",
+    "Sala Puerto Rico", "Sala Mogán Mall", "Sala Mogán"
   ];
 
-  // Llenar el datalist de salas
+  // Llenar datalist y filtro de salas
   const salasList = document.getElementById("salasList");
-  salas.forEach((sala) => {
+  salas.forEach(sala => {
     const option = document.createElement("option");
     option.value = sala;
     salasList.appendChild(option);
   });
 
-  // Llenar el select de salas para el filtro
   const salaFiltro = document.getElementById("salaFiltro");
-  salas.forEach((sala) => {
+  salas.forEach(sala => {
     const option = document.createElement("option");
     option.value = sala;
     option.textContent = sala;
     salaFiltro.appendChild(option);
   });
 
-  // Event Listeners
+  salaFiltro.addEventListener("change", actualizarHistorial);
   form.addEventListener("submit", guardarTarea);
   toggleHistorialBtn.addEventListener("click", toggleHistorial);
   fotosInput.addEventListener("change", mostrarPreviewFotos);
 
-  // Cargar historial inicial
   actualizarHistorial();
 });
 
-// Función para guardar una nueva tarea o editar una existente
+// Guardar o editar tarea (admite varias fotos)
 function guardarTarea(e) {
   e.preventDefault();
 
@@ -72,50 +50,29 @@ function guardarTarea(e) {
   const horaFin = document.getElementById("horaFin").value;
   const descripcion = document.getElementById("descripcion").value;
   const fotosInput = document.getElementById("fotos");
-  const fotosPromises = Array.from(fotosInput.files).map((file) => {
-    return new Promise((resolve) => {
+  const fotosPromises = Array.from(fotosInput.files).map(file => {
+    return new Promise(resolve => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result);
       reader.readAsDataURL(file);
     });
   });
 
-  Promise.all(fotosPromises).then((nuevasFotosBase64) => {
+  Promise.all(fotosPromises).then(nuevasFotosBase64 => {
     const tareaActualizada = {
-      sala: sala,
-      prioridad: prioridad,
-      fecha: fecha,
-      horaInicio: horaInicio,
-      horaFin: horaFin,
-      descripcion: descripcion,
-      fotos: nuevasFotosBase64 // Se llenará con las fotos convertidas a Base64
+      sala, prioridad, fecha, horaInicio, horaFin, descripcion,
+      fotos: nuevasFotosBase64 // array de imágenes
     };
 
     if (tareaAEditarId !== null) {
-      console.log("Entrando en el bloque de edición.");
-      // Editar tarea existente
-      const indice = tareas.findIndex((tarea) => tarea.id == tareaAEditarId);
-      console.log("Índice de la tarea a editar:", indice);
+      const indice = tareas.findIndex(tarea => tarea.id == tareaAEditarId);
       if (indice !== -1) {
         tareas[indice] = { id: tareaAEditarId, ...tareaActualizada };
         mostrarMensaje("Tarea editada correctamente", "success");
-        console.log("Tareas después de la edición:", tareas);
-        localStorage.setItem("tareas", JSON.stringify(tareas));
-        actualizarHistorial();
-        tareaAEditarId = null; // Resetear el ID de edición
-        const guardarBtn = document.querySelector('button[type="submit"]');
-        if (guardarBtn) {
-          guardarBtn.textContent = "Guardar Tarea"; // Restablecer el texto del botón
-        }
-      } else {
-        console.log(
-          "No se encontró la tarea con ID:",
-          tareaAEditarId,
-          "en el array tareas para editar."
-        );
       }
+      tareaAEditarId = null;
+      document.querySelector('#tareaForm button[type="submit"]').textContent = "Guardar Tarea";
     } else {
-      // Guardar nueva tarea
       const nuevaTarea = { id: Date.now(), ...tareaActualizada };
       tareas.push(nuevaTarea);
       mostrarMensaje("Tarea guardada correctamente", "success");
@@ -128,86 +85,63 @@ function guardarTarea(e) {
   });
 }
 
-// Función para mostrar/ocultar el historial
+// Mostrar/ocultar historial con Bootstrap d-none
 function toggleHistorial() {
   const historialContainer = document.getElementById("historialContainer");
-  const toggleBtn = document.getElementById("toggleHistorial");
-
-  if (!historialContainer || !toggleBtn) {
-    console.error("No se encontraron los elementos necesarios");
-    return;
+  const visible = !historialContainer.classList.contains("d-none");
+  if (visible) {
+    historialContainer.classList.add("d-none");
+    document.getElementById("toggleHistorial").textContent = "Mostrar Historial";
+  } else {
+    historialContainer.classList.remove("d-none");
+    document.getElementById("toggleHistorial").textContent = "Ocultar Historial";
+    actualizarHistorial();
   }
-
-  historialContainer.style.display =
-    historialContainer.style.display === "none" ? "block" : "none";
-  toggleBtn.textContent =
-    historialContainer.style.display === "block"
-      ? "Ocultar Historial"
-      : "Mostrar Historial";
-  actualizarHistorial();
 }
 
-// Función para actualizar el historial
+// Actualizar historial de tareas
 function actualizarHistorial() {
   const historialTareas = document.getElementById("historialTareas");
+  const salaFiltro = document.getElementById("salaFiltro").value || "";
   historialTareas.innerHTML = "";
 
   tareas
+    .filter(tarea => !salaFiltro || tarea.sala === salaFiltro)
     .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
-    .forEach((tarea) => {
+    .forEach(tarea => {
       const tareaElement = document.createElement("div");
       tareaElement.className = "list-group-item";
       tareaElement.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <h6 class="mb-1">${tarea.sala}</h6>
-                    <span class="badge ${getPrioridadBadgeClass(
-                      tarea.prioridad
-                    )}">${tarea.prioridad}</span>
-                </div>
-                <p class="mb-1"><strong>Fecha:</strong> ${new Date(
-                  tarea.fecha
-                ).toLocaleDateString()}</p>
-                <p class="mb-1"><strong>Horario:</strong> ${
-                  tarea.horaInicio
-                } - ${tarea.horaFin}</p>
-                <p class="mb-1">${tarea.descripcion}</p>
-                ${
-                  tarea.fotos && tarea.fotos.length > 0
-                    ? `
-                    <div class="fotos-container mt-2">
-                        <div class="d-flex flex-wrap gap-2">
-                            ${tarea.fotos
-                              .map(
-                                (foto) => `
-                                    <div class="foto-preview">
-                                        <img src="${foto}" alt="Foto de la tarea">
-                                    </div>
-                                `
-                              )
-                              .join("")}
-                        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <h6 class="mb-1">${tarea.sala}</h6>
+          <span class="badge ${getPrioridadBadgeClass(tarea.prioridad)}">${tarea.prioridad}</span>
+        </div>
+        <p class="mb-1"><strong>Fecha:</strong> ${new Date(tarea.fecha).toLocaleDateString()}</p>
+        <p class="mb-1"><strong>Horario:</strong> ${tarea.horaInicio} - ${tarea.horaFin}</p>
+        <p class="mb-1">${tarea.descripcion}</p>
+        ${
+          tarea.fotos && tarea.fotos.length > 0
+            ? `<div class="fotos-container mt-2 d-flex flex-wrap gap-2">
+                  ${tarea.fotos.map(foto => `
+                    <div class="foto-preview">
+                      <img src="${foto}" alt="Foto de la tarea" class="img-thumbnail" style="max-width:100px;">
                     </div>
-                `
-                    : ""
-                }
-                <div class="d-flex justify-content-end gap-2 mt-2">
-                    <button class="btn btn-sm btn-primary" onclick="editarRegistro('${
-                      tarea.id
-                    }')">Editar</button>
-                    <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('${
-                      tarea.id
-                    }')">Eliminar</button>
-                </div>
-            `;
+                  `).join("")}
+              </div>`
+            : ""
+        }
+        <div class="d-flex justify-content-end gap-2 mt-2">
+          <button class="btn btn-sm btn-primary" onclick="editarRegistro('${tarea.id}')">Editar</button>
+          <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('${tarea.id}')">Eliminar</button>
+        </div>
+      `;
       historialTareas.appendChild(tareaElement);
     });
 }
 
-// Función para cargar los datos de una tarea en el formulario para editar
-
+// Cargar datos para editar
 function editarRegistro(id) {
-  console.log("Función editarRegistro llamada con ID:", id, typeof id);
-  const tareaAEditar = tareas.find((tarea) => String(tarea.id) === String(id));
+  const tareaAEditar = tareas.find(tarea => String(tarea.id) === String(id));
   if (tareaAEditar) {
     document.getElementById("titulo").value = tareaAEditar.sala;
     document.getElementById("prioridad").value = tareaAEditar.prioridad;
@@ -216,57 +150,52 @@ function editarRegistro(id) {
     document.getElementById("horaFin").value = tareaAEditar.horaFin;
     document.getElementById("descripcion").value = tareaAEditar.descripcion;
 
-    // Limpiar la preview de fotos
-    document.getElementById("fotosPreview").innerHTML = "";
+    // Mostrar fotos existentes solo como preview (no en input file)
+    const fotosPreview = document.getElementById("fotosPreview");
+    fotosPreview.innerHTML = "";
+    if (tareaAEditar.fotos && tareaAEditar.fotos.length > 0) {
+      tareaAEditar.fotos.forEach(foto => {
+        const img = document.createElement("img");
+        img.src = foto;
+        img.className = "img-thumbnail me-2";
+        img.style.maxWidth = "100px";
+        fotosPreview.appendChild(img);
+      });
+    }
+    document.getElementById("fotos").value = "";
 
     tareaAEditarId = id;
+    document.querySelector('#tareaForm button[type="submit"]').textContent = "Guardar Cambios";
 
-    const guardarBtn = document.querySelector('button[type="submit"]');
-    if (guardarBtn) {
-      guardarBtn.textContent = "Guardar Cambios";
-    }
-
+    // Ocultar historial para editar cómodamente si está visible
     const historialContainer = document.getElementById("historialContainer");
-    const toggleBtn = document.getElementById("toggleHistorial");
-    if (
-      historialContainer &&
-      toggleBtn &&
-      historialContainer.style.display === "block"
-    ) {
-      historialContainer.style.display = "none";
-      toggleBtn.textContent = "Mostrar Historial";
+    if (!historialContainer.classList.contains("d-none")) {
+      historialContainer.classList.add("d-none");
+      document.getElementById("toggleHistorial").textContent = "Mostrar Historial";
     }
-  } else {
-    console.log(`No se encontró la tarea con ID: ${id} para editar.`);
   }
 }
 
-// Función para eliminar una tarea
+// Eliminar tarea
 function eliminarRegistro(id) {
-  console.log("Intentando eliminar tarea con ID:", id);
-  console.log("Tareas antes de filtrar:", tareas);
   if (confirm("¿Está seguro de que desea eliminar esta tarea?")) {
-    tareas = tareas.filter((tarea) => String(tarea.id) !== String(id)); // Forzar comparación como strings
-    console.log("Tareas después de filtrar:", tareas);
+    tareas = tareas.filter(tarea => String(tarea.id) !== String(id));
     localStorage.setItem("tareas", JSON.stringify(tareas));
     actualizarHistorial();
     mostrarMensaje("Tarea eliminada correctamente", "success");
-  } else {
-    console.log("Eliminación cancelada por el usuario.");
   }
 }
 
-// Función para mostrar preview de fotos
+// Mostrar preview de todas las fotos seleccionadas
 function mostrarPreviewFotos(e) {
   const fotosPreview = document.getElementById("fotosPreview");
   fotosPreview.innerHTML = "";
-
-  Array.from(e.target.files).forEach((file) => {
+  Array.from(e.target.files).forEach(file => {
     const reader = new FileReader();
-    reader.onload = function (e) {
+    reader.onload = function(e) {
       const img = document.createElement("img");
       img.src = e.target.result;
-      img.className = "img-thumbnail";
+      img.className = "img-thumbnail me-2";
       img.style.maxWidth = "100px";
       fotosPreview.appendChild(img);
     };
@@ -274,43 +203,37 @@ function mostrarPreviewFotos(e) {
   });
 }
 
-// Función auxiliar para obtener la clase de badge según la prioridad
+// Badge visual según prioridad
 function getPrioridadBadgeClass(prioridad) {
-  switch (prioridad.toLowerCase()) {
-    case "alta":
-      return "bg-danger";
-    case "media":
-      return "bg-warning";
-    case "baja":
-      return "bg-success";
-    default:
-      return "bg-secondary";
+  switch ((prioridad || "").toLowerCase()) {
+    case "alta": return "bg-danger";
+    case "media": return "bg-warning";
+    case "baja": return "bg-success";
+    default: return "bg-secondary";
   }
 }
 
-// Función para mostrar mensajes
+// Mostrar mensajes de éxito/error
 function mostrarMensaje(texto, tipo) {
   const mensaje = document.getElementById("mensaje");
   mensaje.textContent = texto;
   mensaje.className = `alert alert-${tipo}`;
   mensaje.style.display = "block";
-
   setTimeout(() => {
     mensaje.style.display = "none";
   }, 3000);
 }
 
-// Función para generar PDF
+// Generar informe PDF (con imágenes)
 function generarPDF() {
   const fechaInicio = document.getElementById("fechaInicioPDF").value;
   const fechaFin = document.getElementById("fechaFinPDF").value;
   const salaSeleccionada = document.getElementById("salaFiltro").value;
 
-  let tareasFiltradas = tareas.filter((tarea) => {
+  let tareasFiltradas = tareas.filter(tarea => {
     const fechaTarea = new Date(tarea.fecha);
     const inicio = fechaInicio ? new Date(fechaInicio) : null;
     const fin = fechaFin ? new Date(fechaFin) : null;
-
     return (
       (!inicio || fechaTarea >= inicio) &&
       (!fin || fechaTarea <= fin) &&
@@ -318,54 +241,81 @@ function generarPDF() {
     );
   });
 
+  const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   let yPos = 20;
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 20;
 
   doc.setFontSize(16);
-  doc.text("Informe de Tareas", 20, yPos);
-  
-  // Subrayado debajo del título
-const textWidth = doc.getTextWidth("Informe de Tareas");
-doc.setLineWidth(0.4); // Grosor del subrayado
-doc.line(20, yPos + 2, 20 + textWidth, yPos + 2);
+  doc.text("Informe de Tareas", margin, yPos);
+  const textWidth = doc.getTextWidth("Informe de Tareas");
+  doc.setLineWidth(0.4);
+  doc.line(margin, yPos + 2, margin + textWidth, yPos + 2);
   yPos += 10;
 
   doc.setFontSize(12);
-  doc.text(
-    `Período: ${fechaInicio || "Inicio"} - ${fechaFin || "Fin"}`,
-    20,
-    yPos
-  );
+  doc.text(`Período: ${fechaInicio || "Inicio"} - ${fechaFin || "Fin"}`, margin, yPos);
   yPos += 10;
-  doc.text(`Sala: ${salaSeleccionada || "Todas"}`, 20, yPos);
+  doc.text(`Sala: ${salaSeleccionada || "Todas"}`, margin, yPos);
   yPos += 20;
 
-  tareasFiltradas.forEach((tarea) => {
-    // Verificar si necesitamos una nueva página
-    if (yPos > 250) {
+  tareasFiltradas.forEach(tarea => {
+    if (yPos > pageHeight - 40) {
       doc.addPage();
       yPos = 20;
     }
-
     doc.setFontSize(14);
-    const salaTexto =tarea.sala;
-doc.text(salaTexto, 20, yPos);
-
-// Subrayado para Sala
-const salaTextWidth = doc.getTextWidth(salaTexto);
-doc.setLineWidth(0.5); // Puedes ajustar el grosor si lo deseas
-doc.line(20, yPos + 2, 20 + salaTextWidth, yPos + 2);
+    const salaTexto = tarea.sala;
+    doc.text(salaTexto, margin, yPos);
+    const salaTextWidth = doc.getTextWidth(salaTexto);
+    doc.setLineWidth(0.5);
+    doc.line(margin, yPos + 2, margin + salaTextWidth, yPos + 2);
     yPos += 10;
 
     doc.setFontSize(12);
-    doc.text(`Fecha: ${tarea.fecha}`, 30, yPos);
-    yPos += 7;
-    doc.text(`Horario: ${tarea.horaInicio} - ${tarea.horaFin}`, 30, yPos);
-    yPos += 7;
-    doc.text(`Prioridad: ${tarea.prioridad}`, 30, yPos);
-    yPos += 7;
-    doc.text(`Descripción: ${tarea.descripcion}`, 30, yPos);
-    yPos += 20;
+    doc.text(`Fecha: ${tarea.fecha}`, margin + 10, yPos); yPos += 7;
+    doc.text(`Horario: ${tarea.horaInicio} - ${tarea.horaFin}`, margin + 10, yPos); yPos += 7;
+    doc.text(`Prioridad: ${tarea.prioridad}`, margin + 10, yPos); yPos += 7;
+    doc.text(`Descripción: ${tarea.descripcion}`, margin + 10, yPos); yPos += 10;
+
+    // Añadir imágenes
+    if (tarea.fotos && tarea.fotos.length > 0) {
+      doc.setFontSize(11);
+      doc.text("Fotos:", margin + 10, yPos); yPos += 5;
+
+      let imgX = margin + 15;
+      let imgY = yPos;
+      const maxImgWidth = 40;
+      const maxImgHeight = 40;
+      const spacing = 5;
+
+      tarea.fotos.forEach((foto, idx) => {
+        if (imgX + maxImgWidth > doc.internal.pageSize.getWidth() - margin) {
+          imgX = margin + 15;
+          imgY += maxImgHeight + spacing;
+        }
+        if (imgY + maxImgHeight > pageHeight - 20) {
+          doc.addPage();
+          imgY = 20;
+          imgX = margin + 15;
+        }
+        try {
+          doc.addImage(foto, "JPEG", imgX, imgY, maxImgWidth, maxImgHeight);
+        } catch (e) {
+          // Si no es JPEG, intenta PNG
+          try {
+            doc.addImage(foto, "PNG", imgX, imgY, maxImgWidth, maxImgHeight);
+          } catch (e2) {
+            // Ignora si el formato no es soportado
+          }
+        }
+        imgX += maxImgWidth + spacing;
+      });
+      yPos = imgY + maxImgHeight + 10;
+    } else {
+      yPos += 10;
+    }
   });
 
   doc.save("informe-tareas.pdf");
