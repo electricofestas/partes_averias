@@ -80,7 +80,7 @@ function guardarTarea(e) {
 
     localStorage.setItem("tareas", JSON.stringify(tareas));
 
-    limpiarFormulario();
+    limpiarFormulario(); // <-- Esto borra el formulario SIEMPRE tras guardar o editar
 
     actualizarHistorial();
   });
