@@ -1,3 +1,4 @@
+// Variables globales
 let tareas = JSON.parse(localStorage.getItem("tareas")) || [];
 let tareaAEditarId = null;
 let fotosPreviasEdicion = [];
@@ -95,7 +96,6 @@ function guardarTarea(e) {
 
 function limpiarFormulario() {
   const form = document.getElementById("tareaForm");
-  // Limpieza manual para máxima compatibilidad móvil
   form.reset();
   document.getElementById("titulo").value = "";
   document.getElementById("prioridad").selectedIndex = 0;
@@ -133,6 +133,21 @@ function actualizarHistorial() {
     .forEach(tarea => {
       const tareaElement = document.createElement("div");
       tareaElement.className = "list-group-item";
+      const fotosHTML = (tarea.fotos && tarea.fotos.length > 0) ?
+        `<form onsubmit="return false;" class="form-borrar-fotos" data-tarea-id="${tarea.id}">
+            <div class="fotos-container mt-2 d-flex flex-wrap gap-2">
+              ${tarea.fotos.map((foto, idx) => `
+                <div class="foto-preview position-relative" style="display:inline-block;">
+                  <img src="${foto}" alt="Foto de la tarea" class="img-thumbnail" style="max-width:100px;">
+                  <div style="position:absolute;top:2px;right:2px;">
+                    <input type="checkbox" class="form-check-input borrar-foto-chk" data-foto-idx="${idx}">
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+            <button type="button" class="btn btn-sm btn-danger mt-2 borrar-fotos-btn">Borrar seleccionadas</button>
+        </form>` : "";
+
       tareaElement.innerHTML = `
         <div class="d-flex justify-content-between align-items-center">
           <h6 class="mb-1">${tarea.sala}</h6>
@@ -141,17 +156,7 @@ function actualizarHistorial() {
         <p class="mb-1"><strong>Fecha:</strong> ${new Date(tarea.fecha).toLocaleDateString()}</p>
         <p class="mb-1"><strong>Horario:</strong> ${tarea.horaInicio} - ${tarea.horaFin}</p>
         <p class="mb-1">${tarea.descripcion}</p>
-        ${
-          tarea.fotos && tarea.fotos.length > 0
-            ? `<div class="fotos-container mt-2 d-flex flex-wrap gap-2">
-                  ${tarea.fotos.map(foto => `
-                    <div class="foto-preview">
-                      <img src="${foto}" alt="Foto de la tarea" class="img-thumbnail" style="max-width:100px;">
-                    </div>
-                  `).join("")}
-              </div>`
-            : ""
-        }
+        ${fotosHTML}
         <div class="d-flex justify-content-end gap-2 mt-2">
           <button class="btn btn-sm btn-primary" onclick="editarRegistro('${tarea.id}')">Editar</button>
           <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('${tarea.id}')">Eliminar</button>
@@ -159,6 +164,36 @@ function actualizarHistorial() {
       `;
       historialTareas.appendChild(tareaElement);
     });
+
+  // Asignar listeners a todos los formularios de borrar fotos
+  document.querySelectorAll(".form-borrar-fotos").forEach(form => {
+    form.querySelector(".borrar-fotos-btn").onclick = function () {
+      const tareaId = form.getAttribute("data-tarea-id");
+      const checks = form.querySelectorAll(".borrar-foto-chk");
+      const indicesABorrar = [];
+      checks.forEach((chk, idx) => {
+        if (chk.checked) indicesABorrar.push(idx);
+      });
+      if (indicesABorrar.length === 0) {
+        mostrarMensaje("Selecciona al menos una foto para borrar.", "warning");
+        return;
+      }
+      if (confirm("¿Seguro que quieres borrar las fotos seleccionadas?")) {
+        borrarFotosDeTarea(tareaId, indicesABorrar);
+      }
+    };
+  });
+}
+
+function borrarFotosDeTarea(tareaId, indicesABorrar) {
+  const tareaIdx = tareas.findIndex(t => String(t.id) === String(tareaId));
+  if (tareaIdx === -1) return;
+  // Borra fotos según los índices (de mayor a menor para no desordenar)
+  indicesABorrar.sort((a, b) => b - a)
+    .forEach(idx => tareas[tareaIdx].fotos.splice(idx, 1));
+  localStorage.setItem("tareas", JSON.stringify(tareas));
+  mostrarMensaje("Fotos borradas correctamente.", "success");
+  actualizarHistorial();
 }
 
 function editarRegistro(id) {
@@ -171,10 +206,7 @@ function editarRegistro(id) {
     document.getElementById("horaFin").value = tareaAEditar.horaFin;
     document.getElementById("descripcion").value = tareaAEditar.descripcion;
 
-    // Guardar las fotos actuales por si no se cambian
     fotosPreviasEdicion = tareaAEditar.fotos ? [...tareaAEditar.fotos] : [];
-
-    // Mostrar fotos existentes solo como preview
     const fotosPreview = document.getElementById("fotosPreview");
     fotosPreview.innerHTML = "";
     if (fotosPreviasEdicion.length > 0) {
@@ -191,7 +223,6 @@ function editarRegistro(id) {
     tareaAEditarId = id;
     document.querySelector('#tareaForm button[type="submit"]').textContent = "Guardar Cambios";
 
-    // Ocultar historial si está visible
     const historialContainer = document.getElementById("historialContainer");
     if (!historialContainer.classList.contains("d-none")) {
       historialContainer.classList.add("d-none");
@@ -243,5 +274,3 @@ function mostrarMensaje(texto, tipo) {
     mensaje.style.display = "none";
   }, 3000);
 }
-
-// ... (tu función de generarPDF aquí, si la usas)
