@@ -61,7 +61,7 @@ function guardarTarea(e) {
   Promise.all(fotosPromises).then(nuevasFotosBase64 => {
     const tareaActualizada = {
       sala, prioridad, fecha, horaInicio, horaFin, descripcion,
-      fotos: nuevasFotosBase64 // array de imágenes
+      fotos: nuevasFotosBase64
     };
 
     if (tareaAEditarId !== null) {
@@ -79,10 +79,32 @@ function guardarTarea(e) {
     }
 
     localStorage.setItem("tareas", JSON.stringify(tareas));
-    document.getElementById("tareaForm").reset();
-    document.getElementById("fotosPreview").innerHTML = "";
+
+    // Limpieza completa, compatible móvil y escritorio:
+    limpiarFormulario();
+
     actualizarHistorial();
   });
+}
+
+// Limpia todos los campos del formulario, incluyendo manualmente los controles en móviles
+function limpiarFormulario() {
+  const form = document.getElementById("tareaForm");
+  form.reset();
+
+  // Limpieza manual de los campos para máxima compatibilidad móvil
+  document.getElementById("titulo").value = "";
+  document.getElementById("prioridad").selectedIndex = 0;
+  document.getElementById("fecha").value = "";
+  document.getElementById("horaInicio").value = "";
+  document.getElementById("horaFin").value = "";
+  document.getElementById("descripcion").value = "";
+  document.getElementById("fotos").value = "";
+
+  document.getElementById("fotosPreview").innerHTML = "";
+
+  // Si el formulario tuviera validación visual, la quitamos:
+  form.classList.remove("was-validated");
 }
 
 // Mostrar/ocultar historial con Bootstrap d-none
@@ -150,7 +172,7 @@ function editarRegistro(id) {
     document.getElementById("horaFin").value = tareaAEditar.horaFin;
     document.getElementById("descripcion").value = tareaAEditar.descripcion;
 
-    // Mostrar fotos existentes solo como preview (no en input file)
+    // Mostrar fotos existentes solo como preview
     const fotosPreview = document.getElementById("fotosPreview");
     fotosPreview.innerHTML = "";
     if (tareaAEditar.fotos && tareaAEditar.fotos.length > 0) {
@@ -303,12 +325,9 @@ function generarPDF() {
         try {
           doc.addImage(foto, "JPEG", imgX, imgY, maxImgWidth, maxImgHeight);
         } catch (e) {
-          // Si no es JPEG, intenta PNG
           try {
             doc.addImage(foto, "PNG", imgX, imgY, maxImgWidth, maxImgHeight);
-          } catch (e2) {
-            // Ignora si el formato no es soportado
-          }
+          } catch (e2) {}
         }
         imgX += maxImgWidth + spacing;
       });
