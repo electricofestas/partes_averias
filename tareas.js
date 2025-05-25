@@ -49,25 +49,21 @@ document.addEventListener("DOMContentLoaded", () => {
 function guardarTarea(e) {
   e.preventDefault();
 
-  // ¡Solución móvil!: Forzamos a leer SIEMPRE los valores directamente del DOM, nunca de una copia en memoria.
-  // Esto previene situaciones de autofill/cache en móviles y asegura limpieza tras reset.
-  const getValue = id => (document.getElementById(id) ? document.getElementById(id).value : "");
-  const getSelectValue = id => {
-    let el = document.getElementById(id);
-    return el && el.options ? el.options[el.selectedIndex].value : "";
-  };
-
-  const sala = getValue("titulo");
-  const prioridad = getSelectValue("prioridad");
-  const fecha = getValue("fecha");
-  const horaInicio = getValue("horaInicio");
-  const horaFin = getValue("horaFin");
-  const descripcion = getValue("descripcion");
+  // Leemos SIEMPRE los valores del DOM (previene autofill/cache en móviles)
+  const sala = document.getElementById("titulo").value.trim();
+  const prioridad = document.getElementById("prioridad").value;
+  const fecha = document.getElementById("fecha").value;
+  const horaInicio = document.getElementById("horaInicio").value;
+  const horaFin = document.getElementById("horaFin").value;
+  const descripcion = document.getElementById("descripcion").value.trim();
   const fotosInput = document.getElementById("fotos");
 
-  // Evitar guardar si el campo principal está vacío (protección extra para móviles)
-  if (!sala.trim()) {
+  if (!sala) {
     mostrarMensaje("El campo sala es obligatorio.", "danger");
+    return;
+  }
+  if (!prioridad || !fecha || !horaInicio || !horaFin || !descripcion) {
+    mostrarMensaje("Todos los campos son obligatorios.", "danger");
     return;
   }
 
@@ -113,48 +109,44 @@ function guardarTarea(e) {
     }
 
     localStorage.setItem("tareas", JSON.stringify(tareas));
-
     limpiarFormulario();
-
     actualizarHistorial();
   });
 }
 
+// Solución robusta móvil/escritorio: limpieza manual + reset + repaint
 function limpiarFormulario() {
-  // Solución universal móvil/escritorio: limpiamos manual y forzamos repaint
   const form = document.getElementById("tareaForm");
   if (form) form.reset();
 
-  // Limpieza manual adicional (por si el reset no funciona en móviles)
-  ["titulo", "prioridad", "fecha", "horaInicio", "horaFin", "descripcion", "fotos"].forEach(id => {
-    let el = document.getElementById(id);
-    if (el) {
-      if (el.tagName === "SELECT") el.selectedIndex = 0;
-      else el.value = "";
-    }
-  });
-
-  // Para móviles: forzar repaint de los inputs
+  // Limpieza manual adicional (garantizada para móviles)
   setTimeout(() => {
     ["titulo", "prioridad", "fecha", "horaInicio", "horaFin", "descripcion", "fotos"].forEach(id => {
       let el = document.getElementById(id);
-      if (el) el.blur();
+      if (el) {
+        if (el.tagName === "SELECT") el.selectedIndex = 0;
+        else el.value = "";
+        el.blur();
+      }
     });
-  }, 100);
-
-  document.getElementById("fotosPreview").innerHTML = "";
-  if (form) form.classList.remove("was-validated");
-  fotosPreviasEdicion = [];
+    document.getElementById("fotosPreview").innerHTML = "";
+    if (form) form.classList.remove("was-validated");
+    fotosPreviasEdicion = [];
+    // Restaurar el botón a "Guardar Tarea" siempre
+    document.querySelector('#tareaForm button[type="submit"]').textContent = "Guardar Tarea";
+  }, 50);
 }
 
 function toggleHistorial() {
   const historialContainer = document.getElementById("historialContainer");
-  const visible = !historialContainer.classList.contains("d-none");
+  const visible = !historialContainer.classList.contains("d-none") && !historialContainer.classList.contains("hidden");
   if (visible) {
     historialContainer.classList.add("d-none");
+    historialContainer.classList.add("hidden");
     document.getElementById("toggleHistorial").textContent = "Mostrar Historial";
   } else {
     historialContainer.classList.remove("d-none");
+    historialContainer.classList.remove("hidden");
     document.getElementById("toggleHistorial").textContent = "Ocultar Historial";
     actualizarHistorial();
   }
@@ -261,8 +253,9 @@ function editarRegistro(id) {
     document.querySelector('#tareaForm button[type="submit"]').textContent = "Guardar Cambios";
 
     const historialContainer = document.getElementById("historialContainer");
-    if (!historialContainer.classList.contains("d-none")) {
+    if (historialContainer && (!historialContainer.classList.contains("d-none") && !historialContainer.classList.contains("hidden"))) {
       historialContainer.classList.add("d-none");
+      historialContainer.classList.add("hidden");
       document.getElementById("toggleHistorial").textContent = "Mostrar Historial";
     }
   }
