@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("tareaForm");
   const toggleHistorialBtn = document.getElementById("toggleHistorial");
   const fotosInput = document.getElementById("fotos");
+  const generarPdfBtn = document.getElementById("generarPdfBtn");
 
   // Salas por defecto
   let salas = JSON.parse(localStorage.getItem("salas")) || [
@@ -37,6 +38,11 @@ document.addEventListener("DOMContentLoaded", () => {
   toggleHistorialBtn.addEventListener("click", toggleHistorial);
   fotosInput.addEventListener("change", mostrarPreviewFotos);
 
+  // PDF
+  if (generarPdfBtn) {
+    generarPdfBtn.addEventListener("click", generarPDF);
+  }
+
   actualizarHistorial();
 });
 
@@ -62,8 +68,6 @@ function guardarTarea(e) {
   Promise.all(fotosPromises).then(nuevasFotosBase64 => {
     let fotosFinal;
     if (tareaAEditarId !== null) {
-      // Si no se han seleccionado nuevas fotos, mantener las anteriores,
-      // si se han seleccionado, añadirlas a las anteriores
       fotosFinal = fotosPreviasEdicion.concat(nuevasFotosBase64);
     } else {
       fotosFinal = nuevasFotosBase64;
@@ -99,7 +103,6 @@ function guardarTarea(e) {
 
 function limpiarFormulario() {
   const form = document.getElementById("tareaForm");
-  // Limpieza manual completa para máxima compatibilidad móvil
   if (form) form.reset();
   ["titulo", "prioridad", "fecha", "horaInicio", "horaFin", "descripcion", "fotos"].forEach(id => {
     let el = document.getElementById(id);
@@ -278,4 +281,104 @@ function mostrarMensaje(texto, tipo) {
   setTimeout(() => {
     mensaje.style.display = "none";
   }, 3000);
+}
+
+// ---- GENERAR PDF ----
+function generarPDF() {
+  // Puedes cambiar estos IDs según tu HTML
+  const fechaInicio = document.getElementById("fechaInicioPDF") ? document.getElementById("fechaInicioPDF").value : "";
+  const fechaFin = document.getElementById("fechaFinPDF") ? document.getElementById("fechaFinPDF").value : "";
+  const salaSeleccionada = document.getElementById("salaFiltro") ? document.getElementById("salaFiltro").value : "";
+
+  let tareasFiltradas = tareas.filter(tarea => {
+    const fechaTarea = new Date(tarea.fecha);
+    const inicio = fechaInicio ? new Date(fechaInicio) : null;
+    const fin = fechaFin ? new Date(fechaFin) : null;
+    return (
+      (!inicio || fechaTarea >= inicio) &&
+      (!fin || fechaTarea <= fin) &&
+      (!salaSeleccionada || tarea.sala === salaSeleccionada)
+    );
+  });
+
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    mostrarMensaje("jsPDF no está cargado. Asegúrate de incluir jsPDF en tu HTML.", "danger");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let yPos = 20;
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 20;
+
+  doc.setFontSize(16);
+  doc.text("Informe de Tareas", margin, yPos);
+  const textWidth = doc.getTextWidth("Informe de Tareas");
+  doc.setLineWidth(0.4);
+  doc.line(margin, yPos + 2, margin + textWidth, yPos + 2);
+  yPos += 10;
+
+  doc.setFontSize(12);
+  doc.text(`Período: ${fechaInicio || "Inicio"} - ${fechaFin || "Fin"}`, margin, yPos);
+  yPos += 10;
+  doc.text(`Sala: ${salaSeleccionada || "Todas"}`, margin, yPos);
+  yPos += 20;
+
+  tareasFiltradas.forEach(tarea => {
+    if (yPos > pageHeight - 40) {
+      doc.addPage();
+      yPos = 20;
+    }
+    doc.setFontSize(14);
+    const salaTexto = tarea.sala;
+    doc.text(salaTexto, margin, yPos);
+    const salaTextWidth = doc.getTextWidth(salaTexto);
+    doc.setLineWidth(0.5);
+    doc.line(margin, yPos + 2, margin + salaTextWidth, yPos + 2);
+    yPos += 10;
+
+    doc.setFontSize(12);
+    doc.text(`Fecha: ${tarea.fecha}`, margin + 10, yPos); yPos += 7;
+    doc.text(`Horario: ${tarea.horaInicio} - ${tarea.horaFin}`, margin + 10, yPos); yPos += 7;
+    doc.text(`Prioridad: ${tarea.prioridad}`, margin + 10, yPos); yPos += 7;
+    doc.text(`Descripción: ${tarea.descripcion}`, margin + 10, yPos); yPos += 10;
+
+    // Añadir imágenes
+    if (tarea.fotos && tarea.fotos.length > 0) {
+      doc.setFontSize(11);
+      doc.text("Fotos:", margin + 10, yPos); yPos += 5;
+
+      let imgX = margin + 15;
+      let imgY = yPos;
+      const maxImgWidth = 40;
+      const maxImgHeight = 40;
+      const spacing = 5;
+
+      tarea.fotos.forEach((foto, idx) => {
+        if (imgX + maxImgWidth > doc.internal.pageSize.getWidth() - margin) {
+          imgX = margin + 15;
+          imgY += maxImgHeight + spacing;
+        }
+        if (imgY + maxImgHeight > pageHeight - 20) {
+          doc.addPage();
+          imgY = 20;
+          imgX = margin + 15;
+        }
+        try {
+          doc.addImage(foto, "JPEG", imgX, imgY, maxImgWidth, maxImgHeight);
+        } catch (e) {
+          try {
+            doc.addImage(foto, "PNG", imgX, imgY, maxImgWidth, maxImgHeight);
+          } catch (e2) {}
+        }
+        imgX += maxImgWidth + spacing;
+      });
+      yPos = imgY + maxImgHeight + 10;
+    } else {
+      yPos += 10;
+    }
+  });
+
+  doc.save("informe-tareas.pdf");
 }
