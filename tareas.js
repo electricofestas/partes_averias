@@ -19,26 +19,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Llenar datalist y filtro de salas
   const salasList = document.getElementById("salasList");
-  if (salasList) {
-    salasList.innerHTML = ""; // Limpia opciones previas
-    salas.forEach(sala => {
-      const option = document.createElement("option");
-      option.value = sala;
-      salasList.appendChild(option);
+  salas.forEach(sala => {
+    const option = document.createElement("option");
+    option.value = sala;
+    salasList.appendChild(option);
   });
 
   const salaFiltro = document.getElementById("salaFiltro");
-  if (salaFiltro) {
-    // Limpia para evitar duplicados
-    salaFiltro.innerHTML = '<option value="">Todas las salas</option>';
-    salas.forEach(sala => {
+  salas.forEach(sala => {
     const option = document.createElement("option");
     option.value = sala;
     option.textContent = sala;
     salaFiltro.appendChild(option);
   });
 
-  salaFiltro && salaFiltro.addEventListener("change", actualizarHistorial);
+  salaFiltro.addEventListener("change", actualizarHistorial);
   form.addEventListener("submit", guardarTarea);
   toggleHistorialBtn.addEventListener("click", toggleHistorial);
   fotosInput.addEventListener("change", mostrarPreviewFotos);
@@ -54,23 +49,13 @@ document.addEventListener("DOMContentLoaded", () => {
 function guardarTarea(e) {
   e.preventDefault();
 
-  // Leemos SIEMPRE los valores del DOM (previene autofill/cache en móviles)
-  const sala = document.getElementById("titulo").value.trim();
+  const sala = document.getElementById("titulo").value;
   const prioridad = document.getElementById("prioridad").value;
   const fecha = document.getElementById("fecha").value;
   const horaInicio = document.getElementById("horaInicio").value;
   const horaFin = document.getElementById("horaFin").value;
-  const descripcion = document.getElementById("descripcion").value.trim();
+  const descripcion = document.getElementById("descripcion").value;
   const fotosInput = document.getElementById("fotos");
-
-  if (!sala) {
-    mostrarMensaje("El campo sala es obligatorio.", "danger");
-    return;
-  }
-  if (!prioridad || !fecha || !horaInicio || !horaFin || !descripcion) {
-    mostrarMensaje("Todos los campos son obligatorios.", "danger");
-    return;
-  }
 
   const fotosPromises = Array.from(fotosInput.files).map(file => {
     return new Promise(resolve => {
@@ -94,15 +79,10 @@ function guardarTarea(e) {
     };
 
     if (tareaAEditarId !== null) {
-      // Buscar por ID y actualizar EN EL ARRAY tareas
-      const indice = tareas.findIndex(tarea => String(tarea.id) === String(tareaAEditarId));
+      const indice = tareas.findIndex(tarea => tarea.id == tareaAEditarId);
       if (indice !== -1) {
         tareas[indice] = { id: tareaAEditarId, ...tareaActualizada };
         mostrarMensaje("Tarea editada correctamente", "success");
-      } else {
-        // Si falla, guardar como nueva
-        tareas.push({ id: Date.now(), ...tareaActualizada });
-        mostrarMensaje("Tarea editada como nueva (no encontrada por id)", "warning");
       }
       tareaAEditarId = null;
       fotosPreviasEdicion = [];
@@ -114,44 +94,36 @@ function guardarTarea(e) {
     }
 
     localStorage.setItem("tareas", JSON.stringify(tareas));
+
     limpiarFormulario();
+
     actualizarHistorial();
   });
 }
 
-// Solución robusta móvil/escritorio: limpieza manual + reset + repaint
 function limpiarFormulario() {
   const form = document.getElementById("tareaForm");
   if (form) form.reset();
-
-  // Limpieza manual adicional (garantizada para móviles)
-  setTimeout(() => {
-    ["titulo", "prioridad", "fecha", "horaInicio", "horaFin", "descripcion", "fotos"].forEach(id => {
-      let el = document.getElementById(id);
-      if (el) {
-        if (el.tagName === "SELECT") el.selectedIndex = 0;
-        else el.value = "";
-        el.blur();
-      }
-    });
-    document.getElementById("fotosPreview").innerHTML = "";
-    if (form) form.classList.remove("was-validated");
-    fotosPreviasEdicion = [];
-    // Restaurar el botón a "Guardar Tarea" siempre
-    document.querySelector('#tareaForm button[type="submit"]').textContent = "Guardar Tarea";
-  }, 50);
+  ["titulo", "prioridad", "fecha", "horaInicio", "horaFin", "descripcion", "fotos"].forEach(id => {
+    let el = document.getElementById(id);
+    if (el) {
+      if (el.tagName === "SELECT") el.selectedIndex = 0;
+      else el.value = "";
+    }
+  });
+  document.getElementById("fotosPreview").innerHTML = "";
+  if (form) form.classList.remove("was-validated");
+  fotosPreviasEdicion = [];
 }
 
 function toggleHistorial() {
   const historialContainer = document.getElementById("historialContainer");
-  const visible = !historialContainer.classList.contains("d-none") && !historialContainer.classList.contains("hidden");
+  const visible = !historialContainer.classList.contains("d-none");
   if (visible) {
     historialContainer.classList.add("d-none");
-    historialContainer.classList.add("hidden");
     document.getElementById("toggleHistorial").textContent = "Mostrar Historial";
   } else {
     historialContainer.classList.remove("d-none");
-    historialContainer.classList.remove("hidden");
     document.getElementById("toggleHistorial").textContent = "Ocultar Historial";
     actualizarHistorial();
   }
@@ -168,6 +140,7 @@ function actualizarHistorial() {
     .forEach(tarea => {
       const tareaElement = document.createElement("div");
       tareaElement.className = "list-group-item";
+      // Fotos con checkboxes
       const fotosHTML = (tarea.fotos && tarea.fotos.length > 0) ?
         `<form onsubmit="return false;" class="form-borrar-fotos" data-tarea-id="${tarea.id}">
             <div class="fotos-container mt-2 d-flex flex-wrap gap-2">
@@ -223,6 +196,7 @@ function actualizarHistorial() {
 function borrarFotosDeTarea(tareaId, indicesABorrar) {
   const tareaIdx = tareas.findIndex(t => String(t.id) === String(tareaId));
   if (tareaIdx === -1) return;
+  // Borra fotos según los índices (de mayor a menor para no desordenar)
   indicesABorrar.sort((a, b) => b - a)
     .forEach(idx => tareas[tareaIdx].fotos.splice(idx, 1));
   localStorage.setItem("tareas", JSON.stringify(tareas));
@@ -258,9 +232,8 @@ function editarRegistro(id) {
     document.querySelector('#tareaForm button[type="submit"]').textContent = "Guardar Cambios";
 
     const historialContainer = document.getElementById("historialContainer");
-    if (historialContainer && (!historialContainer.classList.contains("d-none") && !historialContainer.classList.contains("hidden"))) {
+    if (!historialContainer.classList.contains("d-none")) {
       historialContainer.classList.add("d-none");
-      historialContainer.classList.add("hidden");
       document.getElementById("toggleHistorial").textContent = "Mostrar Historial";
     }
   }
@@ -312,6 +285,7 @@ function mostrarMensaje(texto, tipo) {
 
 // ---- GENERAR PDF ----
 function generarPDF() {
+  // Puedes cambiar estos IDs según tu HTML
   const fechaInicio = document.getElementById("fechaInicioPDF") ? document.getElementById("fechaInicioPDF").value : "";
   const fechaFin = document.getElementById("fechaFinPDF") ? document.getElementById("fechaFinPDF").value : "";
   const salaSeleccionada = document.getElementById("salaFiltro") ? document.getElementById("salaFiltro").value : "";
