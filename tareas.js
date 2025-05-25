@@ -19,21 +19,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Llenar datalist y filtro de salas
   const salasList = document.getElementById("salasList");
-  salas.forEach(sala => {
-    const option = document.createElement("option");
-    option.value = sala;
-    salasList.appendChild(option);
+  if (salasList) {
+    salasList.innerHTML = ""; // Limpia opciones previas
+    salas.forEach(sala => {
+      const option = document.createElement("option");
+      option.value = sala;
+      salasList.appendChild(option);
   });
 
   const salaFiltro = document.getElementById("salaFiltro");
-  salas.forEach(sala => {
+  if (salaFiltro) {
+    // Limpia para evitar duplicados
+    salaFiltro.innerHTML = '<option value="">Todas las salas</option>';
+    salas.forEach(sala => {
     const option = document.createElement("option");
     option.value = sala;
     option.textContent = sala;
     salaFiltro.appendChild(option);
   });
 
-  salaFiltro.addEventListener("change", actualizarHistorial);
+  salaFiltro && salaFiltro.addEventListener("change", actualizarHistorial);
   form.addEventListener("submit", guardarTarea);
   toggleHistorialBtn.addEventListener("click", toggleHistorial);
   fotosInput.addEventListener("change", mostrarPreviewFotos);
