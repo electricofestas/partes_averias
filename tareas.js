@@ -49,13 +49,27 @@ document.addEventListener("DOMContentLoaded", () => {
 function guardarTarea(e) {
   e.preventDefault();
 
-  const sala = document.getElementById("titulo").value;
-  const prioridad = document.getElementById("prioridad").value;
-  const fecha = document.getElementById("fecha").value;
-  const horaInicio = document.getElementById("horaInicio").value;
-  const horaFin = document.getElementById("horaFin").value;
-  const descripcion = document.getElementById("descripcion").value;
+  // ¡Solución móvil!: Forzamos a leer SIEMPRE los valores directamente del DOM, nunca de una copia en memoria.
+  // Esto previene situaciones de autofill/cache en móviles y asegura limpieza tras reset.
+  const getValue = id => (document.getElementById(id) ? document.getElementById(id).value : "");
+  const getSelectValue = id => {
+    let el = document.getElementById(id);
+    return el && el.options ? el.options[el.selectedIndex].value : "";
+  };
+
+  const sala = getValue("titulo");
+  const prioridad = getSelectValue("prioridad");
+  const fecha = getValue("fecha");
+  const horaInicio = getValue("horaInicio");
+  const horaFin = getValue("horaFin");
+  const descripcion = getValue("descripcion");
   const fotosInput = document.getElementById("fotos");
+
+  // Evitar guardar si el campo principal está vacío (protección extra para móviles)
+  if (!sala.trim()) {
+    mostrarMensaje("El campo sala es obligatorio.", "danger");
+    return;
+  }
 
   const fotosPromises = Array.from(fotosInput.files).map(file => {
     return new Promise(resolve => {
@@ -79,10 +93,15 @@ function guardarTarea(e) {
     };
 
     if (tareaAEditarId !== null) {
-      const indice = tareas.findIndex(tarea => tarea.id == tareaAEditarId);
+      // Buscar por ID y actualizar EN EL ARRAY tareas
+      const indice = tareas.findIndex(tarea => String(tarea.id) === String(tareaAEditarId));
       if (indice !== -1) {
         tareas[indice] = { id: tareaAEditarId, ...tareaActualizada };
         mostrarMensaje("Tarea editada correctamente", "success");
+      } else {
+        // Si falla, guardar como nueva
+        tareas.push({ id: Date.now(), ...tareaActualizada });
+        mostrarMensaje("Tarea editada como nueva (no encontrada por id)", "warning");
       }
       tareaAEditarId = null;
       fotosPreviasEdicion = [];
@@ -102,8 +121,11 @@ function guardarTarea(e) {
 }
 
 function limpiarFormulario() {
+  // Solución universal móvil/escritorio: limpiamos manual y forzamos repaint
   const form = document.getElementById("tareaForm");
   if (form) form.reset();
+
+  // Limpieza manual adicional (por si el reset no funciona en móviles)
   ["titulo", "prioridad", "fecha", "horaInicio", "horaFin", "descripcion", "fotos"].forEach(id => {
     let el = document.getElementById(id);
     if (el) {
@@ -111,6 +133,15 @@ function limpiarFormulario() {
       else el.value = "";
     }
   });
+
+  // Para móviles: forzar repaint de los inputs
+  setTimeout(() => {
+    ["titulo", "prioridad", "fecha", "horaInicio", "horaFin", "descripcion", "fotos"].forEach(id => {
+      let el = document.getElementById(id);
+      if (el) el.blur();
+    });
+  }, 100);
+
   document.getElementById("fotosPreview").innerHTML = "";
   if (form) form.classList.remove("was-validated");
   fotosPreviasEdicion = [];
@@ -140,7 +171,6 @@ function actualizarHistorial() {
     .forEach(tarea => {
       const tareaElement = document.createElement("div");
       tareaElement.className = "list-group-item";
-      // Fotos con checkboxes
       const fotosHTML = (tarea.fotos && tarea.fotos.length > 0) ?
         `<form onsubmit="return false;" class="form-borrar-fotos" data-tarea-id="${tarea.id}">
             <div class="fotos-container mt-2 d-flex flex-wrap gap-2">
@@ -196,7 +226,6 @@ function actualizarHistorial() {
 function borrarFotosDeTarea(tareaId, indicesABorrar) {
   const tareaIdx = tareas.findIndex(t => String(t.id) === String(tareaId));
   if (tareaIdx === -1) return;
-  // Borra fotos según los índices (de mayor a menor para no desordenar)
   indicesABorrar.sort((a, b) => b - a)
     .forEach(idx => tareas[tareaIdx].fotos.splice(idx, 1));
   localStorage.setItem("tareas", JSON.stringify(tareas));
@@ -285,7 +314,6 @@ function mostrarMensaje(texto, tipo) {
 
 // ---- GENERAR PDF ----
 function generarPDF() {
-  // Puedes cambiar estos IDs según tu HTML
   const fechaInicio = document.getElementById("fechaInicioPDF") ? document.getElementById("fechaInicioPDF").value : "";
   const fechaFin = document.getElementById("fechaFinPDF") ? document.getElementById("fechaFinPDF").value : "";
   const salaSeleccionada = document.getElementById("salaFiltro") ? document.getElementById("salaFiltro").value : "";
