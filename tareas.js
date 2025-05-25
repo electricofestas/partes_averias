@@ -60,9 +60,13 @@ function guardarTarea(e) {
   });
 
   Promise.all(fotosPromises).then(nuevasFotosBase64 => {
-    let fotosFinal = nuevasFotosBase64;
+    let fotosFinal;
     if (tareaAEditarId !== null) {
+      // Si no se han seleccionado nuevas fotos, mantener las anteriores,
+      // si se han seleccionado, añadirlas a las anteriores
       fotosFinal = fotosPreviasEdicion.concat(nuevasFotosBase64);
+    } else {
+      fotosFinal = nuevasFotosBase64;
     }
 
     const tareaActualizada = {
@@ -95,16 +99,17 @@ function guardarTarea(e) {
 
 function limpiarFormulario() {
   const form = document.getElementById("tareaForm");
-  form.reset();
-  document.getElementById("titulo").value = "";
-  document.getElementById("prioridad").selectedIndex = 0;
-  document.getElementById("fecha").value = "";
-  document.getElementById("horaInicio").value = "";
-  document.getElementById("horaFin").value = "";
-  document.getElementById("descripcion").value = "";
-  document.getElementById("fotos").value = "";
+  // Limpieza manual completa para máxima compatibilidad móvil
+  if (form) form.reset();
+  ["titulo", "prioridad", "fecha", "horaInicio", "horaFin", "descripcion", "fotos"].forEach(id => {
+    let el = document.getElementById(id);
+    if (el) {
+      if (el.tagName === "SELECT") el.selectedIndex = 0;
+      else el.value = "";
+    }
+  });
   document.getElementById("fotosPreview").innerHTML = "";
-  form.classList.remove("was-validated");
+  if (form) form.classList.remove("was-validated");
   fotosPreviasEdicion = [];
 }
 
