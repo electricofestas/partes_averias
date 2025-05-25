@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     salaFiltro.appendChild(option);
   });
 
-  salaFiltro.addEventListener("change", actualizarHistorial);
+  salaFiltro && salaFiltro.addEventListener("change", actualizarHistorial);
   form.addEventListener("submit", guardarTarea);
   toggleHistorialBtn.addEventListener("click", toggleHistorial);
   fotosInput.addEventListener("change", mostrarPreviewFotos);
