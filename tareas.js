@@ -421,13 +421,18 @@ async function guardarTarea(event) {
     mostrarMensaje("Error al guardar la tarea: " + error.message, "danger");
   }
 }
-
+/**
+ * Delete a task
+ * @param {string|number} id - Task ID
+ */
 function eliminarRegistro(id) {
   if (confirm("¿Está seguro de que desea eliminar esta tarea?")) {
     try {
+      // Convertir el ID a un número
+      const taskId = parseInt(id, 10);
       const transaction = db.transaction(["tareas"], "readwrite");
       const objectStore = transaction.objectStore("tareas");
-      const request = objectStore.delete(id);
+      const request = objectStore.delete(taskId);
 
       request.onsuccess = () => {
         mostrarMensaje("Tarea eliminada correctamente", "success");
@@ -439,13 +444,19 @@ function eliminarRegistro(id) {
       mostrarMensaje("Error al eliminar la tarea", "danger");
     }
   }
-}
 
+
+/**
+ * Edit a task
+ * @param {string|number} id - Task ID
+ */
 function editarRegistro(id) {
   try {
+    // Convertir el ID a un número
+    const taskId = parseInt(id, 10);
     const transaction = db.transaction(["tareas"], "readonly");
     const objectStore = transaction.objectStore("tareas");
-    const request = objectStore.get(id);
+    const request = objectStore.get(taskId);
 
     request.onsuccess = function(event) {
       const tareaAEditar = event.target.result;
@@ -471,7 +482,7 @@ function editarRegistro(id) {
           });
         }
         document.getElementById("fotos").value = "";
-        tareaAEditarId = id;
+        tareaAEditarId = taskId;
         document.querySelector('#tareaForm button[type="submit"]').textContent = "Guardar Cambios";
         const historialContainer = document.getElementById("historialContainer");
         if (!historialContainer.classList.contains("d-none")) {
@@ -485,6 +496,8 @@ function editarRegistro(id) {
   } catch (error) {
     logError('editarRegistro', error);
     mostrarMensaje("Error al editar la tarea", "danger");
+  }
+}
   }
 }
 
